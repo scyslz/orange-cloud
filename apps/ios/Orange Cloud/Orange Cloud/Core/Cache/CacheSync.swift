@@ -16,7 +16,10 @@ enum CacheSync {
     /// Zone 列表 upsert 进缓存（删掉远端已不存在的条目），
     /// 并同步主屏 Widget 快照与 Spotlight 索引。
     static func syncZones(_ zones: [Zone], accountId: String, accountName: String, context: ModelContext) throws {
-        let existing = try context.fetch(FetchDescriptor<CachedZone>())
+        // 仅在当前账号范围内 upsert：删除远端已不存在的条目时不能波及其它账号的缓存，
+        // 否则切换账号会清空别的账号的域名（连带丢失它们的 pinned 状态）。
+        let predicate = #Predicate<CachedZone> { $0.accountId == accountId }
+        let existing = try context.fetch(FetchDescriptor<CachedZone>(predicate: predicate))
         let fetchedIDs = Set(zones.map(\.id))
 
         for cached in existing where !fetchedIDs.contains(cached.id) {

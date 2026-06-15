@@ -17,6 +17,8 @@ nonisolated enum AuthError: LocalizedError {
     case stateMismatch
     case oauthError(String)
     case tokenExchangeFailed(String)
+    /// token 端点返回非 2xx。status 用于区分「刷新令牌确已失效」（400）与瞬时错误（5xx/429）。
+    case tokenEndpointError(status: Int, body: String)
     case notLoggedIn
 
     var errorDescription: String? {
@@ -25,6 +27,8 @@ nonisolated enum AuthError: LocalizedError {
         case .stateMismatch:                return String(localized: "state 校验失败，请重试")
         case .oauthError(let message):      return message
         case .tokenExchangeFailed(let msg): return String(localized: "换取 Token 失败：\(msg)")
+        case .tokenEndpointError(let status, let body):
+            return String(localized: "换取 Token 失败：\(body.isEmpty ? "HTTP \(status)" : body)")
         case .notLoggedIn:                  return String(localized: "登录已过期，请重新登录")
         }
     }
@@ -65,6 +69,8 @@ final class AuthManager {
     }
 
     private var currentWebSession: ASWebAuthenticationSession?
+    /// 进行中的刷新任务：并发的 401/临期请求复用同一次刷新，避免刷新令牌轮换下的竞态
+    private var refreshTask: Task<String, Error>?
     private let contextProvider = WebAuthContextProvider()
     private static let sessionsKey = "authSessions"
     private static let currentSessionKey = "currentSessionId"
@@ -324,14 +330,35 @@ final class AuthManager {
         )
     }
 
-    /// 刷新当前身份的 access_token；refresh 失效则移除该身份
+    /// 刷新当前身份的 access_token。并发去重：多个临期/401 请求只触发一次网络刷新，
+    /// 否则刷新令牌轮换（每次刷新作废上一枚）会让并发请求互相把令牌作废，导致误登出。
     func refreshAccessToken() async throws -> String {
+        if let inFlight = refreshTask {
+            return try await inFlight.value
+        }
+        let task = Task<String, Error> { [weak self] in
+            guard let self else { throw AuthError.notLoggedIn }
+            return try await self.performTokenRefresh()
+        }
+        refreshTask = task
+        defer { refreshTask = nil }
+        return try await task.value
+    }
+
+    /// 实际刷新逻辑：仅在刷新令牌确已失效（token 端点 400）时移除该身份；
+    /// 网络中断 / 超时 / 5xx / 429 等瞬时失败保留身份并原样抛出，交由调用方稍后重试，
+    /// 避免一次网络抖动就把用户登出（其他身份始终不受影响）。
+    private func performTokenRefresh() async throws -> String {
         guard let sessionId = currentSessionId,
-              let stored = TokenStore.load(sessionId: sessionId),
-              let refreshToken = stored.refreshToken else {
+              let stored = TokenStore.load(sessionId: sessionId) else {
             if let id = currentSessionId {
                 removeSession(id)
             }
+            throw AuthError.notLoggedIn
+        }
+        guard let refreshToken = stored.refreshToken else {
+            // 没有刷新令牌则无从续期，只能重新授权
+            removeSession(sessionId)
             throw AuthError.notLoggedIn
         }
         do {
@@ -348,11 +375,12 @@ final class AuthManager {
             )
             TokenStore.save(newToken, sessionId: sessionId)
             return newToken.accessToken
-        } catch {
-            // refresh_token 失效：移除该身份（其他身份不受影响）
+        } catch let AuthError.tokenEndpointError(status, _) where status == 400 {
+            // OAuth 标准：刷新令牌失效 / 被撤销 / 过期返回 400，确需重新授权
             removeSession(sessionId)
             throw AuthError.notLoggedIn
         }
+        // 其它错误（网络 / 超时 / 5xx / 429）：保留身份，原样向上抛出
     }
 
     private func requestToken(parameters: [String: String]) async throws -> TokenResponse {
@@ -367,7 +395,7 @@ final class AuthManager {
         }
         guard (200...299).contains(http.statusCode) else {
             let body = String(data: data, encoding: .utf8) ?? ""
-            throw AuthError.tokenExchangeFailed("HTTP \(http.statusCode) \(body)")
+            throw AuthError.tokenEndpointError(status: http.statusCode, body: body)
         }
         do {
             return try JSONDecoder().decode(TokenResponse.self, from: data)

@@ -15,7 +15,9 @@ struct DashboardView: View {
     @Environment(SessionStore.self) private var session
     @Environment(AuthManager.self) private var auth
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \CachedZone.name) private var cachedZones: [CachedZone]
+    // 域名 / Workers 缓存只取当前账号（父视图 .id(selectedAccount) 切换账号时重建以刷新谓词）；
+    // DNS 记录缓存无 accountId 字段，按当前账号下的缓存域名在内存里过滤计数。
+    @Query private var cachedZones: [CachedZone]
     @Query private var cachedWorkers: [CachedWorkerScript]
     @Query private var cachedRecords: [CachedDNSRecord]
 
@@ -63,6 +65,14 @@ struct DashboardView: View {
     private var dayBoundaryRaw = DayBoundary.utc.rawValue
 
     init(session: SessionStore) {
+        let accountId = session.selectedAccount?.id ?? ""
+        _cachedZones = Query(
+            filter: #Predicate<CachedZone> { $0.accountId == accountId },
+            sort: \CachedZone.name
+        )
+        _cachedWorkers = Query(
+            filter: #Predicate<CachedWorkerScript> { $0.accountId == accountId }
+        )
         _viewModel = State(initialValue: DashboardViewModel(
             analyticsService: session.analyticsService,
             accountService: session.accountService,
@@ -84,6 +94,14 @@ struct DashboardView: View {
 
     private var activeCount: Int {
         cachedZones.filter { $0.status == "active" }.count
+    }
+
+    /// DNS 记录数：接口汇总优先（viewModel.dnsRecordTotal），
+    /// 回退时按当前账号下的缓存域名过滤本地记录，避免跨账号累加。
+    private var dnsRecordCount: Int {
+        if let total = viewModel.dnsRecordTotal { return total }
+        let zoneIds = Set(cachedZones.map(\.id))
+        return cachedRecords.filter { zoneIds.contains($0.zoneId) }.count
     }
 
     /// 首页展示的域名：用户 pin 过的优先；一个没 pin 时兜底展示前 3 个
@@ -388,7 +406,7 @@ struct DashboardView: View {
             HStack(spacing: OCLayout.islandGap) {
                 StatIsland(
                     label: String(localized: "DNS 记录"),
-                    value: viewModel.dnsRecordTotal ?? cachedRecords.count,
+                    value: dnsRecordCount,
                     sub: viewModel.dnsRecordTotal != nil
                         ? String(localized: "全部域名")
                         : String(localized: "已同步域名")

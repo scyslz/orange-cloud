@@ -14,7 +14,7 @@ struct WorkerListView: View {
     @Environment(SessionStore.self) private var session
     @Environment(AuthManager.self) private var auth
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \CachedWorkerScript.id) private var cachedScripts: [CachedWorkerScript]
+    @Query private var cachedScripts: [CachedWorkerScript]
 
     @State private var viewModel: WorkerListViewModel
     @State private var searchText = ""
@@ -23,6 +23,13 @@ struct WorkerListView: View {
     @Namespace private var namespace
 
     init(session: SessionStore) {
+        // 只读当前账号的脚本（多账号切换后缓存里会留有别的账号的条目）。
+        // 父视图用 .id(selectedAccount) 在切换账号时重建本视图，让谓词跟着更新。
+        let accountId = session.selectedAccount?.id ?? ""
+        _cachedScripts = Query(
+            filter: #Predicate<CachedWorkerScript> { $0.accountId == accountId },
+            sort: \CachedWorkerScript.id
+        )
         _viewModel = State(initialValue: WorkerListViewModel(workerService: session.workerService))
     }
 

@@ -16,7 +16,7 @@ struct ZoneListView: View {
     @Environment(SessionStore.self) private var session
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @Query(sort: \CachedZone.name) private var cachedZones: [CachedZone]
+    @Query private var cachedZones: [CachedZone]
 
     @State private var viewModel: ZoneListViewModel
     @State private var searchText = ""
@@ -24,6 +24,12 @@ struct ZoneListView: View {
     @Namespace private var namespace
 
     init(session: SessionStore) {
+        // 只读当前账号的域名；父视图用 .id(selectedAccount) 在切换账号时重建以刷新谓词。
+        let accountId = session.selectedAccount?.id ?? ""
+        _cachedZones = Query(
+            filter: #Predicate<CachedZone> { $0.accountId == accountId },
+            sort: \CachedZone.name
+        )
         _viewModel = State(initialValue: ZoneListViewModel(zoneService: session.zoneService))
     }
 

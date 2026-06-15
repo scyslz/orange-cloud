@@ -197,7 +197,17 @@ actor CFAPIClient {
             throw APIError.unauthorized
         }
         if token.expiresAt.timeIntervalSinceNow < 60 {  // 提前 60 秒刷新
-            return try await authManager.refreshAccessToken()
+            do {
+                return try await authManager.refreshAccessToken()
+            } catch AuthError.notLoggedIn {
+                throw APIError.unauthorized          // 刷新令牌确已失效：不再使用旧 token
+            } catch {
+                // 刷新瞬时失败但旧 token 仍在有效期内：先用旧 token，真过期了由 401 重试兜底
+                if token.expiresAt.timeIntervalSinceNow > 0 {
+                    return token.accessToken
+                }
+                throw error
+            }
         }
         return token.accessToken
     }
