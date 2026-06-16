@@ -133,6 +133,8 @@ struct WorkerListView: View {
                 Task { await refresh() }
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.ocOrangePressed)
+            .fontWeight(.bold)
         }
     }
 

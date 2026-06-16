@@ -178,9 +178,10 @@ struct R2ObjectListView: View {
                         selectedObject = object
                     } label: {
                         Image(systemName: "info.circle")
-                            .foregroundStyle(Color.ocOrange)
+                            .foregroundStyle(Color.ocOrangeText)
                     }
                     .buttonStyle(.borderless)
+                    .accessibilityLabel("详细信息")
                 }
                 .contextMenu {
                     if previewable(object) {

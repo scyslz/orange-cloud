@@ -64,6 +64,7 @@ struct WhatsNewView: View {
                     .padding(.vertical, 4)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.ocOrangePressed)
             .padding(.horizontal, 28)
             .padding(.top, 8)
             .padding(.bottom, 24)

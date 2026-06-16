@@ -39,6 +39,8 @@ struct WAFRuleListView: View {
                     if canWrite {
                         Button("添加规则") { showForm = true }
                             .buttonStyle(.borderedProminent)
+                            .tint(Color.ocOrangePressed)
+                            .fontWeight(.bold)
                     }
                 }
             } else {
@@ -258,6 +260,7 @@ private struct WAFRuleRow: View {
                         set: { onToggle($0) }
                     ))
                     .labelsHidden()
+                    .accessibilityLabel("启用规则")
                 } else {
                     Button {
                         onDenied()
@@ -266,6 +269,8 @@ private struct WAFRuleRow: View {
                             .foregroundStyle((rule.enabled ?? true) ? .green : .secondary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel((rule.enabled ?? true) ? "已启用" : "已停用")
+                    .accessibilityHint("需要写入权限才能修改")
                 }
             }
             if let expression = rule.expression {

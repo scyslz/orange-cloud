@@ -48,6 +48,7 @@ struct IdentityDetailView: View {
                             ),
                             in: Circle()
                         )
+                        .accessibilityHidden(true)
                     Text(identity.label)
                         .font(.title3.bold())
                     Label("OAuth 2.0", systemImage: "checkmark.seal.fill")

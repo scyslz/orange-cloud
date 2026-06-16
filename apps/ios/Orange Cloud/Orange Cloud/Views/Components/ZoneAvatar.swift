@@ -39,6 +39,8 @@ struct ZoneAvatar: View {
                     .blendMode(.plusLighter)
             )
             .shadow(color: .black.opacity(0.18), radius: 1.5, y: 1)
+            // 首字母头像是装饰，域名文字总在旁边，对读屏隐藏
+            .accessibilityHidden(true)
     }
 }
 

@@ -122,6 +122,14 @@
 		"tfNote": "Requer iOS 17.0 ou posterior · Apenas dispositivos Apple",
 		"entries": [
 			{
+				"version": "1.2.0",
+				"date": "2026.06.17",
+				"channel": "App Store",
+				"notes": [
+					"Totalmente acessível: VoiceOver, texto maior, indicações que não dependem só da cor e contraste suficiente"
+				]
+			},
+			{
 				"version": "1.1.0",
 				"date": "2026.06.17",
 				"channel": "App Store",

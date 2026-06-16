@@ -290,6 +290,7 @@ struct ZoneDetailView: View {
                     set: { on in requestToggle(on) }
                 ))
                 .labelsHidden()
+                .accessibilityLabel(title)
             } else {
                 Button {
                     deniedScopeHint = canReadSettings ? "zone-settings.write" : "zone-settings.read"
@@ -304,9 +305,13 @@ struct ZoneDetailView: View {
                         Image(systemName: "lock.fill")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
                     }
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(title)
+                .accessibilityValue(actionsViewModel.settingsLoaded ? (isOn ? String(localized: "开") : String(localized: "关")) : "")
+                .accessibilityHint("需要额外授权才能修改")
             }
         }
     }
@@ -323,10 +328,12 @@ struct ZoneDetailView: View {
             HStack(spacing: 8) {
                 HStack(spacing: 5) {
                     StatusDot(status: zone.status, size: 7)
+                        .accessibilityHidden(true)
                     Text(statusText)
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(zone.status == "active" ? Color.green : Color.secondary)
                 }
+                .accessibilityElement(children: .combine)
                 PlanBadge(planName: zone.planName)
             }
         }

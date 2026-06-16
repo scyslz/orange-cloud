@@ -67,7 +67,8 @@ struct DNSListView: View {
                     if canWrite {
                         Button("添加记录") { formMode = .add }
                             .buttonStyle(.borderedProminent)
-                            .tint(Color.ocOrange)
+                            .tint(Color.ocOrangePressed)
+                            .fontWeight(.bold)
                     }
                 }
             } else if filteredRecords.isEmpty {
@@ -192,7 +193,7 @@ struct DNSRecordRow: View {
                 .frame(width: 52)
                 .padding(.vertical, 4)
                 .background(Color.ocOrange.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
-                .foregroundStyle(Color.ocOrange)
+                .foregroundStyle(Color.ocOrangeText)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.name)

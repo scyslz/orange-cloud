@@ -122,6 +122,14 @@
 		"tfNote": "iOS 17.0 以降が必要 · Apple デバイス限定",
 		"entries": [
 			{
+				"version": "1.2.0",
+				"date": "2026.06.17",
+				"channel": "App Store",
+				"notes": [
+					"アクセシビリティ全面対応：VoiceOver、文字の拡大、色だけに頼らない表示、十分なコントラスト"
+				]
+			},
+			{
 				"version": "1.1.0",
 				"date": "2026.06.17",
 				"channel": "App Store",

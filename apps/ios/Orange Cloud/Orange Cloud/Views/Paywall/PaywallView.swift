@@ -52,6 +52,7 @@ struct PaywallView: View {
                     } label: {
                         Image(systemName: "xmark")
                     }
+                    .accessibilityLabel("关闭")
                 }
             }
         }
@@ -166,10 +167,10 @@ struct PaywallView: View {
                         if product.id == EntitlementStore.ProductID.yearly {
                             Text("推荐")
                                 .font(.caption2.weight(.bold))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(Color.ocOrangeText)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.ocOrange, in: Capsule())
+                                .background(Color.ocOrange.opacity(0.16), in: Capsule())
                         }
                     }
                     Text(planDetail(product))
@@ -248,13 +249,14 @@ struct PaywallView: View {
                         .tint(.white)
                 } else {
                     Text(ctaTitle)
-                        .font(.body.weight(.semibold))
+                        .font(.body.weight(.bold))
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
         }
         .buttonStyle(.borderedProminent)
+        .tint(Color.ocOrangePressed)
         .disabled(isPurchasing || selectedProduct == nil)
     }
 

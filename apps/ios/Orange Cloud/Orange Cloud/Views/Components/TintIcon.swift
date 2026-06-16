@@ -19,6 +19,8 @@ struct TintIcon: View {
             .foregroundStyle(color)
             .frame(width: size, height: size)
             .background(color.opacity(0.12), in: Circle())
+            // 始终作为行内装饰图标出现（旁边有文字标签），对读屏隐藏避免冗余
+            .accessibilityHidden(true)
     }
 }
 

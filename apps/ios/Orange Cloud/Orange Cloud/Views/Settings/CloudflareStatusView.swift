@@ -28,6 +28,8 @@ struct CloudflareStatusView: View {
                         Task { await viewModel.load() }
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(Color.ocOrangePressed)
+                    .fontWeight(.bold)
                 }
             }
         }
@@ -271,7 +273,7 @@ struct StatusIncidentDetailView: View {
                             HStack {
                                 Text(update.statusText)
                                     .font(.caption.weight(.semibold))
-                                    .foregroundStyle(Color.ocOrange)
+                                    .foregroundStyle(Color.ocOrangeText)
                                 Spacer()
                                 if let date = WorkerScript.parseDate(update.displayAt) {
                                     Text(date, format: .dateTime.month().day().hour().minute())

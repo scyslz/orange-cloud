@@ -58,7 +58,7 @@ struct SettingsView: View {
                         HStack(spacing: 12) {
                             TintIcon(systemImage: "plus", color: .ocOrange, size: 38)
                             Text("添加账号")
-                                .foregroundStyle(Color.ocOrange)
+                                .foregroundStyle(Color.ocOrangeText)
                             if !entitlements.isPro && !auth.sessions.isEmpty {
                                 Spacer()
                                 ProBadge()
@@ -91,7 +91,7 @@ struct SettingsView: View {
                             Spacer()
                             if entitlements.isPro {
                                 Image(systemName: "checkmark.seal.fill")
-                                    .foregroundStyle(Color.ocOrange)
+                                    .foregroundStyle(Color.ocOrangeText)
                             } else {
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.semibold))
@@ -255,6 +255,7 @@ struct SettingsView: View {
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .frame(width: 38, height: 38)
+                .accessibilityHidden(true)
                 .background(
                     LinearGradient(
                         colors: [Color(red: 1, green: 0.65, blue: 0.31), .ocOrangePressed],
@@ -277,7 +278,7 @@ struct SettingsView: View {
             if auth.currentSessionId == identity.id {
                 Text("当前")
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(Color.ocOrange)
+                    .foregroundStyle(Color.ocOrangeText)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(Color.ocOrange.opacity(0.14), in: Capsule())

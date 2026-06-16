@@ -22,6 +22,13 @@ nonisolated struct WhatsNewRelease: Sendable {
 
 nonisolated enum WhatsNewContent {
     static let releases: [WhatsNewRelease] = [
+        WhatsNewRelease(version: "1.2.0", items: [
+            WhatsNewItem(
+                icon:   "accessibility",
+                title:  String(localized: "全面无障碍"),
+                detail: String(localized: "VoiceOver、更大字体、不只靠颜色区分、足够对比度全面达标，配合系统辅助功能更顺手。")
+            ),
+        ]),
         WhatsNewRelease(version: "1.1.0", items: [
             WhatsNewItem(
                 icon:   "curlybraces",

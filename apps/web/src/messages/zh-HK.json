@@ -122,6 +122,14 @@
 		"tfNote": "需要 iOS 17.0 或以上版本 · 僅限 Apple 裝置",
 		"entries": [
 			{
+				"version": "1.2.0",
+				"date": "2026.06.17",
+				"channel": "App Store",
+				"notes": [
+					"全面無障礙：VoiceOver、更大字體、不只靠顏色區分、足夠對比度全面達標"
+				]
+			},
+			{
 				"version": "1.1.0",
 				"date": "2026.06.17",
 				"channel": "App Store",

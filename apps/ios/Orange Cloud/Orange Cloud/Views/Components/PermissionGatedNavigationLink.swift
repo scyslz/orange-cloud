@@ -50,9 +50,11 @@ struct PermissionGatedNavigationLink<Destination: View>: View {
                     Image(systemName: "lock.fill")
                         .foregroundStyle(.tertiary)
                         .font(.caption)
+                        .accessibilityHidden(true)
                 }
             }
             .foregroundStyle(.primary)
+            .accessibilityHint("已锁定，需要额外授权")
             .alert("权限不足", isPresented: $showDenied) {
                 Button("好", role: .cancel) {}
             } message: {

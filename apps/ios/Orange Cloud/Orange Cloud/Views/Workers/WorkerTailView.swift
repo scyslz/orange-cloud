@@ -74,7 +74,7 @@ struct WorkerTailView: View {
             if viewModel.isPaused {
                 Label("已暂停", systemImage: "pause.fill")
                     .font(.caption)
-                    .foregroundStyle(Color.ocOrange)
+                    .foregroundStyle(Color.ocOrangeText)
             }
         }
         .padding(.horizontal)

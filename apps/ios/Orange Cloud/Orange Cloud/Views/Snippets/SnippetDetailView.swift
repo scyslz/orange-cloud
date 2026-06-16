@@ -198,6 +198,7 @@ private struct SnippetRuleRow: View {
                 } else if canWrite {
                     Toggle("", isOn: Binding(get: { isEnabled }, set: { onToggle($0) }))
                         .labelsHidden()
+                        .accessibilityLabel("启用规则")
                 } else {
                     Button {
                         onDenied()
@@ -206,6 +207,8 @@ private struct SnippetRuleRow: View {
                             .foregroundStyle(isEnabled ? Color.green : Color.secondary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(isEnabled ? "已启用" : "已停用")
+                    .accessibilityHint("需要写入权限才能修改")
                 }
             }
             Text(rule.expression)

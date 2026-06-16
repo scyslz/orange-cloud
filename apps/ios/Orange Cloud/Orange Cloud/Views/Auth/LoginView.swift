@@ -33,9 +33,10 @@ struct LoginView: View {
                                 )
                             )
                             .shadow(color: Color.ocOrange.opacity(0.34), radius: 14, y: 10)
+                            .accessibilityHidden(true)   // 品牌图标装饰，下方有「Orange Cloud」文字
 
                         Text("Orange Cloud")
-                            .font(.system(size: 34, weight: .bold))
+                            .font(.system(.largeTitle, weight: .bold))   // 语义字号，随动态字体缩放
                             .foregroundStyle(.primary)
 
                         Text("Cloudflare 管理客户端")
@@ -59,13 +60,13 @@ struct LoginView: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "cloud.fill")
                                 Text("使用 Cloudflare 账号登录")
-                                    .fontWeight(.semibold)
+                                    .fontWeight(.bold)
                             }
                             .font(.body)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.ocOrange, in: Capsule())
+                            .background(Color.ocOrangePressed, in: Capsule())
                             .shadow(color: Color.ocOrange.opacity(0.34), radius: 11, y: 8)
                         }
 

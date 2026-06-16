@@ -141,6 +141,8 @@ struct DashboardView: View {
                                 Task { await session.ensureAccounts() }
                             }
                             .buttonStyle(.borderedProminent)
+                            .tint(Color.ocOrangePressed)
+                            .fontWeight(.bold)
                         }
                     }
                 }
@@ -385,6 +387,8 @@ struct DashboardView: View {
                 .symbolEffect(.bounce, value: session.selectedAccount?.id)
         }
         .popoverTip(accountSwitchTip)
+        .accessibilityLabel("切换账号")
+        .accessibilityValue(session.selectedAccount?.name ?? "")
     }
 
     // MARK: - 资产指标格（2×2）
@@ -487,7 +491,7 @@ struct DashboardView: View {
                     } label: {
                         Label(planSummary, systemImage: "slider.horizontal.3")
                             .font(.subheadline)
-                            .foregroundStyle(Color.ocOrange)
+                            .foregroundStyle(Color.ocOrangeText)
                     }
                 }
             }
@@ -904,7 +908,7 @@ struct DashboardView: View {
                     AppRouter.shared.pendingModule = .zones
                 }
                 .font(.subheadline)
-                .foregroundStyle(Color.ocOrange)
+                .foregroundStyle(Color.ocOrangeText)
             }
 
             if cachedZones.isEmpty && viewModel.isLoadingAssets {
@@ -1158,14 +1162,17 @@ private struct DashboardZoneCard: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Sparkline(values: points.map { Double($0.requests) }, color: .ocOrange)
                         .frame(width: 56, height: 16)
+                        .accessibilityHidden(true)
                     Text(total.formatted(.number.notation(.compactName)))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                         .monospacedDigit()
                         .contentTransition(.numericText())
+                        .accessibilityLabel("24 小时请求")
                 }
             }
             StatusDot(status: zone.status, size: 7)
+                .accessibilityHidden(true)   // 状态已在副标题文字中
         }
         .padding(.horizontal, OCLayout.islandPadding)
         .padding(.vertical, 10)

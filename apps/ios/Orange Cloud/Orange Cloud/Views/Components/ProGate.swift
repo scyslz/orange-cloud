@@ -57,7 +57,7 @@ struct ProBadge: View {
     var body: some View {
         Text(verbatim: "PRO")
             .font(.caption2.weight(.heavy))
-            .foregroundStyle(Color.ocOrange)
+            .foregroundStyle(Color.ocOrangeText)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
             .background(Color.ocOrange.opacity(0.14), in: Capsule())
@@ -127,6 +127,8 @@ struct ProLockedView: View {
                 Label(String(localized: "了解 Orange Cloud Pro"), systemImage: "sparkles")
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color.ocOrangePressed)
+            .fontWeight(.bold)
         }
         .sheet(isPresented: $paywallPresented) {
             PaywallView(feature: feature)

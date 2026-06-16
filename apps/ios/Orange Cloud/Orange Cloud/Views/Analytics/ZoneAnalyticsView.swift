@@ -17,6 +17,8 @@ struct ZoneAnalyticsSection: View {
     @Environment(EntitlementStore.self) private var entitlements
     @State private var selectedDate: Date?
     @State private var rangePaywallPresented = false
+    // 总请求大数字：保留 40pt 视觉基线，同时随动态字体缩放
+    @ScaledMetric(relativeTo: .largeTitle) private var heroNumberSize: CGFloat = 40
 
     var body: some View {
         VStack(spacing: 14) {
@@ -143,7 +145,7 @@ struct ZoneAnalyticsSection: View {
             }
 
             Text(viewModel.totalRequests.formatted())
-                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .font(.system(size: heroNumberSize, weight: .bold, design: .rounded))
                 .contentTransition(.numericText())
 
             requestsChart
@@ -176,6 +178,7 @@ struct ZoneAnalyticsSection: View {
                         startPoint: .top, endPoint: .bottom
                     )
                 )
+                .accessibilityHidden(true)
 
                 LineMark(
                     x: .value("时间", point.date),
@@ -184,6 +187,9 @@ struct ZoneAnalyticsSection: View {
                 .interpolationMethod(.monotone)
                 .foregroundStyle(Color.ocOrange)
                 .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                // 让读屏可逐点浏览：标签报时刻，值报请求数（也驱动 Audio Graph）
+                .accessibilityLabel(axisLabel(for: point.date))
+                .accessibilityValue(Text("\(point.requests) 次请求"))
             }
 
             // 末点高亮（"现在"）
@@ -194,12 +200,14 @@ struct ZoneAnalyticsSection: View {
                 )
                 .symbolSize(60)
                 .foregroundStyle(Color.ocOrange)
+                .accessibilityHidden(true)
             }
 
             // 扫览
             if let selected = selectedPoint {
                 RuleMark(x: .value("选中", selected.date))
                     .foregroundStyle(.secondary.opacity(0.4))
+                    .accessibilityHidden(true)
                     .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart))) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(axisLabel(for: selected.date))
@@ -286,6 +294,7 @@ struct ZoneAnalyticsSection: View {
     private var cacheHitCard: some View {
         HStack(spacing: 18) {
             RingGauge(percent: viewModel.cacheHitRate ?? 0)
+                .accessibilityHidden(true)   // 命中率数字已在右侧文字呈现
 
             VStack(alignment: .leading, spacing: 3) {
                 Text("缓存命中率")
@@ -362,6 +371,10 @@ struct TrendBadge: View {
                     .font(.footnote.weight(.semibold))
             }
             .foregroundStyle((delta >= 0) == positiveIsGood ? Color.green : Color.red)
+            // 方向不只靠颜色：读屏报「上升/下降 + 数值」，箭头形状本身也已区分
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(delta >= 0 ? "上升" : "下降")
+            .accessibilityValue(Text(verbatim: "\(abs(delta).formatted(.number.precision(.fractionLength(1))))\(unit)"))
         }
     }
 }
@@ -415,6 +428,7 @@ struct SmallStatCard: View {
                 Spacer()
                 Sparkline(values: sparkValues, color: sparkColor)
                     .frame(width: 64, height: 26)
+                    .accessibilityHidden(true)   // 装饰性迷你走势，数值已在上方文字
             }
         }
         .padding()

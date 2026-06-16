@@ -141,11 +141,11 @@ struct D1TableView: View {
                                 if column.isPrimaryKey {
                                     Image(systemName: "key.fill")
                                         .font(.system(size: 8))
-                                        .foregroundStyle(Color.ocOrange)
+                                        .foregroundStyle(Color.ocOrangeText)
                                 }
                             }
                             Text(column.type.isEmpty ? "—" : column.type)
-                                .font(.system(size: 9))
+                                .font(.caption2)
                                 .foregroundStyle(.tertiary)
                         }
                     }
@@ -254,7 +254,7 @@ private struct D1RowEditorView: View {
                                 if column.isPrimaryKey {
                                     Image(systemName: "key.fill")
                                         .font(.system(size: 8))
-                                        .foregroundStyle(Color.ocOrange)
+                                        .foregroundStyle(Color.ocOrangeText)
                                 }
                                 if !column.type.isEmpty {
                                     Text(column.type)
@@ -359,11 +359,11 @@ private struct D1RowEditorView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
         case .boolean:
-            booleanField(binding: binding, originalIsNull: originalIsNull)
+            booleanField(binding: binding, originalIsNull: originalIsNull, label: column.name)
         case .datetime:
-            dateField(binding: binding, originalIsNull: originalIsNull, includesTime: true)
+            dateField(binding: binding, originalIsNull: originalIsNull, includesTime: true, label: column.name)
         case .date:
-            dateField(binding: binding, originalIsNull: originalIsNull, includesTime: false)
+            dateField(binding: binding, originalIsNull: originalIsNull, includesTime: false, label: column.name)
         case .text:
             TextField(originalIsNull ? "NULL" : "", text: binding, axis: .vertical)
                 .lineLimit(1...4)
@@ -374,7 +374,7 @@ private struct D1RowEditorView: View {
     }
 
     /// 布尔列：Toggle 写 1 / 0；原值 NULL 时可恢复
-    private func booleanField(binding: Binding<String>, originalIsNull: Bool) -> some View {
+    private func booleanField(binding: Binding<String>, originalIsNull: Bool, label: String) -> some View {
         HStack(spacing: 10) {
             Text(binding.wrappedValue.isEmpty ? "NULL" : binding.wrappedValue)
                 .font(.callout.monospaced())
@@ -388,13 +388,14 @@ private struct D1RowEditorView: View {
                 set: { binding.wrappedValue = $0 ? "1" : "0" }
             ))
             .labelsHidden()
+            .accessibilityLabel(label)
         }
     }
 
     /// 时间列：可识别格式用 DatePicker（UTC 口径，写回保持原存储格式），
     /// NULL 一键填入当前时间，无法识别时回退文本编辑。
     @ViewBuilder
-    private func dateField(binding: Binding<String>, originalIsNull: Bool, includesTime: Bool) -> some View {
+    private func dateField(binding: Binding<String>, originalIsNull: Bool, includesTime: Bool, label: String) -> some View {
         let current = binding.wrappedValue
         if current.isEmpty {
             Button {
@@ -421,6 +422,7 @@ private struct D1RowEditorView: View {
                     displayedComponents: includesTime ? [.date, .hourAndMinute] : [.date]
                 )
                 .labelsHidden()
+                .accessibilityLabel(label)
                 .environment(\.timeZone, .gmt)   // 与 SQLite 存储口径一致
                 Spacer()
                 if originalIsNull {

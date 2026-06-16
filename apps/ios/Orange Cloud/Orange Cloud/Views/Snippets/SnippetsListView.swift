@@ -39,6 +39,8 @@ struct SnippetsListView: View {
                     if canWrite {
                         Button("新建 Snippet") { showEditor = true }
                             .buttonStyle(.borderedProminent)
+                            .tint(Color.ocOrangePressed)
+                            .fontWeight(.bold)
                     }
                 }
             } else {
