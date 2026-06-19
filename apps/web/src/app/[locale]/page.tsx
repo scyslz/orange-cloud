@@ -4,6 +4,7 @@ import { shotLocale } from "@/i18n/routing";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import AppStoreBadge, { TESTFLIGHT_URL, APP_STORE_COMING } from "@/components/AppStoreBadge";
+import ProductHuntBadge from "@/components/ProductHuntBadge";
 import PhoneDemo, { type PhoneStrings } from "@/components/PhoneDemo";
 import HorizonArc from "@/components/HorizonArc";
 import Reveal from "@/components/Reveal";
@@ -368,13 +369,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 							<p className="mt-3 text-[17px] t-secondary">{t("cta.sub")}</p>
 						</Reveal>
 						<Reveal index={2}>
-							<div className="mt-9 flex justify-center">
+							<div className="mt-9 flex flex-col items-center gap-4">
 								<AppStoreBadge
 										locale={locale}
 										alt={t("badge.alt")}
 										comingLabel={t("badge.comingLabel")}
 										coming={APP_STORE_COMING}
 									/>
+								<ProductHuntBadge alt={t("productHunt.alt")} />
 							</div>
 							<p className="mt-5 text-[13px] t-tertiary">{t("cta.requirement")}</p>
 						</Reveal>

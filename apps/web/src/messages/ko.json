@@ -17,6 +17,9 @@
 		"alt": "App Store에서 다운로드",
 		"comingLabel": "App Store 심사 중"
 	},
+	"productHunt": {
+		"alt": "Orange Cloud — 파워 유저를 위한 오픈소스 Cloudflare 도우미 | Product Hunt"
+	},
 	"hero": {
 		"kicker": "iPhone과 iPad를 위한 네이티브 앱",
 		"title1": "Cloudflare를,",

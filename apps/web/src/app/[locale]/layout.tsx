@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import "../globals.css";
 import Head from "next/head";
 import { GoogleAnalytics } from '@next/third-parties/google'
+import Script from "next/script";
 
 const SITE_URL = "https://orange-cloud.chatiro.app";
 
@@ -131,7 +132,9 @@ export default async function LocaleLayout({
 		<html lang={locale}>
 			<Head>
 				<meta name="msvalidate.01" content="D37E43E607B99CBD72EB0FAFBB58FF89" />
+				<Script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "dfe9d89898c447bea839ca39f7769bae"}' />
 			</Head>
+
 			<GoogleAnalytics gaId="G-JLDKXFVLR0" />
 			<body className="antialiased">
 				<script
