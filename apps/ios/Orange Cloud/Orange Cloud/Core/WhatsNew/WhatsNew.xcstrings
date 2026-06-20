@@ -1,0 +1,1150 @@
+{
+  "sourceLanguage": "zh-Hans",
+  "strings": {
+    "Apple Watch App": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch app"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch App"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch App"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch App"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App de Apple Watch"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Watch 앱"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App do Apple Watch"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App do Apple Watch"
+          }
+        }
+      }
+    },
+    "D1 数据库管理": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 Database Management"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 資料庫管理"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 資料庫管理"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 データベース管理"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestión de bases de datos D1"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 데이터베이스 관리"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerenciamento de bancos de dados D1"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestão de bases de dados D1"
+          }
+        }
+      }
+    },
+    "Snippets": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snippets"
+          }
+        }
+      }
+    },
+    "Tunnel 管理": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tunnel Management"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "通道管理"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "隧道管理"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "トンネル管理"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestión de túneles"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "터널 관리"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerenciamento de túneis"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestão de túneis"
+          }
+        }
+      }
+    },
+    "VoiceOver、更大字体、不只靠颜色区分、足够对比度全面达标，配合系统辅助功能更顺手。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver, larger text, color-independent cues, and sufficient contrast — all in place, so the app works smoothly with the system accessibility features."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver、更大字體、不只靠顏色區分、足夠對比度全面達標，搭配系統輔助使用功能更順手。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver、更大字體、不只靠顏色區分、足夠對比度全面達標，配合系統輔助功能更順手。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver、文字の拡大、色だけに頼らない表示、十分なコントラストに対応。システムのアクセシビリティ機能と快適に連携します。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver, texto más grande, indicaciones que no dependen solo del color y contraste suficiente: todo listo para funcionar bien con las funciones de accesibilidad del sistema."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver, 더 큰 텍스트, 색상에만 의존하지 않는 표시, 충분한 대비를 모두 지원하여 시스템 손쉬운 사용 기능과 매끄럽게 어울립니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver, texto maior, indicações que não dependem só da cor e contraste suficiente — tudo pronto para funcionar bem com os recursos de acessibilidade do sistema."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VoiceOver, texto maior, indicações que não dependem só da cor e contraste suficiente — tudo pronto para funcionar bem com as funcionalidades de acessibilidade do sistema."
+          }
+        }
+      }
+    },
+    "不再只是查看——新建隧道、获取连接令牌与命令、配置公共主机名路由。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More than viewing now — create tunnels, get connection tokens and commands, and configure public hostname routing."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再只是檢視——建立通道、取得連線權杖與指令、設定公開主機名稱路由。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不再只是查看——建立隧道、取得連線權杖與指令、設定公開主機名稱路由。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示だけではなく、トンネルの作成、接続トークンとコマンドの取得、パブリックホスト名ルーティングの設定ができます。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya no solo para ver: crea túneles, obtén tokens y comandos de conexión y configura el enrutamiento por nombre de host público."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이제 보기만이 아니라 터널 생성, 연결 토큰과 명령 가져오기, 공개 호스트 이름 라우팅 구성까지."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não é mais só visualizar: crie túneis, obtenha tokens e comandos de conexão e configure o roteamento por nome de host público."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Já não é só visualizar: crie túneis, obtenha tokens e comandos de ligação e configure o encaminhamento por nome de anfitrião público."
+          }
+        }
+      }
+    },
+    "全面无障碍": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fully accessible"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全面無障礙"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "全面無障礙"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アクセシビリティ全面対応"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Totalmente accesible"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완전한 접근성"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Totalmente acessível"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Totalmente acessível"
+          }
+        }
+      }
+    },
+    "刷新失败不再弹窗打断，下拉刷新更稳定可靠。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh failures no longer interrupt with alerts, and pull-to-refresh is more reliable."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新整理失敗不再彈出視窗打斷，下拉重新整理更穩定可靠。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新整理失敗不再彈出視窗打斷，下拉重新整理更穩定可靠。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新の失敗でアラートが割り込まなくなり、引っ張って更新がより安定しました。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los errores al actualizar ya no interrumpen con alertas y deslizar para actualizar es más confiable."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "새로고침 실패 시 더 이상 알림으로 방해하지 않으며, 당겨서 새로고침이 더 안정적입니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falhas ao atualizar não interrompem mais com alertas, e o puxar para atualizar ficou mais confiável."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "As falhas ao atualizar já não interrompem com alertas, e o puxar para atualizar ficou mais fiável."
+          }
+        }
+      }
+    },
+    "刷新更省心": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smoother refreshing"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新整理更順手"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新整理更順手"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新がより快適に"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualización más fluida"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더 매끄러운 새로고침"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização mais fluida"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização mais fluida"
+          }
+        }
+      }
+    },
+    "变量与密钥": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables & Secrets"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "變數與密鑰"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "變數與密鑰"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変数とシークレット"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variables y secretos"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "변수와 시크릿"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variáveis e segredos"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Variáveis e segredos"
+          }
+        }
+      }
+    },
+    "在 App 里把已注册的域名加入账号，并拿到要去注册商处配置的名称服务器。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a domain you already own to your account and get the name servers to set at your registrar."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "將你已註冊的網域加入帳號，並取得要在註冊商處設定的名稱伺服器。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "將你已註冊的域名加入帳戶，並取得要在註冊商處設定的名稱伺服器。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取得済みのドメインをアカウントに追加し、レジストラで設定するネームサーバを取得します。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agrega a tu cuenta un dominio que ya tengas y obtén los servidores de nombres para configurarlos en tu registrador."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미 보유한 도메인을 계정에 추가하고 등록 대행자에 설정할 네임서버를 받으세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione à sua conta um domínio que você já tem e obtenha os servidores de nomes para configurar no seu registrador."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicione à sua conta um domínio que já possui e obtenha os servidores de nomes para configurar no seu registador."
+          }
+        }
+      }
+    },
+    "在域名详情查看、编辑、新建 Cloudflare 边缘代码片段，并管理触发规则——轻量版 Workers，Pro 解锁。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View, edit, and create Cloudflare edge code snippets — and manage their trigger rules — right in zone details. Lightweight Workers, unlocked with Pro."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在網域詳情查看、編輯、新建 Cloudflare 邊緣程式碼片段，並管理觸發規則——輕量版 Workers，Pro 解鎖。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在域名詳情查看、編輯、新增 Cloudflare 邊緣代碼片段，並管理觸發規則——輕量版 Workers，Pro 解鎖。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゾーンの詳細で Cloudflare のエッジコードスニペットを表示・編集・作成し、トリガールールを管理できます。軽量版 Workers、Pro で解放。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consulta, edita y crea snippets de borde de Cloudflare —y gestiona sus reglas de activación— desde los detalles del dominio. Workers ligeros, desbloqueados con Pro."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도메인 상세에서 Cloudflare 엣지 코드 조각을 보고, 편집하고, 만들고 트리거 규칙을 관리하세요 — 가벼운 Workers, Pro로 잠금 해제."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja, edite e crie snippets de borda da Cloudflare — e gerencie suas regras de acionamento — nos detalhes do domínio. Workers leves, desbloqueados com o Pro."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja, edite e crie snippets de periferia da Cloudflare — e faça a gestão das suas regras de acionamento — nos detalhes do domínio. Workers leves, desbloqueados com o Pro."
+          }
+        }
+      }
+    },
+    "域名与路由": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domains & Routes"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "網域與路由"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "域名與路由"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドメインとルート"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dominios y rutas"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도메인과 라우트"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domínios e rotas"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domínios e rotas"
+          }
+        }
+      }
+    },
+    "定时触发器": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cron Triggers"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定時觸發器"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "定時觸發器"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cron トリガー"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activadores Cron"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cron 트리거"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilhos Cron"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilhos Cron"
+          }
+        }
+      }
+    },
+    "把域名状态与流量概览带上手腕，还能添加到表盘复杂功能随时一瞥。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring domain status and traffic overview to your wrist, with watch face complications for a glance anytime."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把網域狀態與流量概覽帶上手腕，還能加入錶面複雜功能隨時一瞥。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "把域名狀態與流量概覽帶上手腕，還能加入錶面複雜功能隨時一瞥。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドメインの状態とトラフィック概要を手首で確認。文字盤のコンプリケーションでいつでもひと目で。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lleva a tu muñeca el estado de los dominios y el resumen de tráfico, con complicaciones en la carátula para verlo de un vistazo."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도메인 상태와 트래픽 개요를 손목에서 확인하고, 시계 페이스 컴플리케이션으로 언제든 한눈에 볼 수 있어요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leve o status dos domínios e o resumo de tráfego para o pulso, com complicações no mostrador para ver num relance."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leve o estado dos domínios e o resumo de tráfego para o pulso, com complicações no mostrador para ver num relance."
+          }
+        }
+      }
+    },
+    "新增西班牙语、韩语、葡萄牙语，现已支持九种语言。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Added Spanish, Korean, and Portuguese — now available in nine languages."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增西班牙文、韓文、葡萄牙文，現已支援九種語言。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增西班牙文、韓文、葡萄牙文，現已支援九種語言。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "スペイン語・韓国語・ポルトガル語を追加し、9言語に対応しました。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregamos español, coreano y portugués: ahora en nueve idiomas."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "스페인어, 한국어, 포르투갈어가 추가되어 이제 9개 언어를 지원합니다."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionamos espanhol, coreano e português — agora em nove idiomas."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionámos espanhol, coreano e português — agora em nove idiomas."
+          }
+        }
+      }
+    },
+    "更多语言": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More languages"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多語言"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更多語言"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "対応言語が増えました"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más idiomas"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "더 많은 언어"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais idiomas"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mais idiomas"
+          }
+        }
+      }
+    },
+    "查看与增删 Cron 触发器，让 Worker 按计划自动运行。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View, add, and remove Cron triggers so a Worker runs automatically on schedule."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "檢視與增刪 Cron 觸發器，讓 Worker 按排程自動執行。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看與增刪 Cron 觸發器，讓 Worker 按排程自動執行。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cron トリガーの表示・追加・削除を行い、Worker をスケジュールどおりに自動実行します。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consulta, agrega y elimina activadores Cron para que un Worker se ejecute automáticamente según un horario."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cron 트리거를 보고 추가·삭제하여 Worker가 일정에 따라 자동으로 실행되게 하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja, adicione e remova gatilhos Cron para que um Worker seja executado automaticamente conforme a programação."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veja, adicione e remova gatilhos Cron para que um Worker seja executado automaticamente conforme o agendamento."
+          }
+        }
+      }
+    },
+    "添加域名": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Domain"
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增網域"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "新增域名"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドメインを追加"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar dominio"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "도메인 추가"
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar domínio"
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar domínio"
+          }
+        }
+      }
+    },
+    "直接新建 D1 数据库，或在原样确认库名后安全删除。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create a D1 database, or delete one safely after confirming its exact name."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接建立 D1 資料庫，或在原樣確認資料庫名稱後安全刪除。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "直接建立 D1 資料庫，或在原樣確認資料庫名稱後安全刪除。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 データベースを作成したり、データベース名を正確に確認してから安全に削除したりできます。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crea una base de datos D1, o elimínala de forma segura tras confirmar su nombre exacto."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "D1 데이터베이스를 만들거나, 데이터베이스 이름을 그대로 확인한 뒤 안전하게 삭제하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crie um banco de dados D1 ou exclua-o com segurança após confirmar o nome exato."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crie uma base de dados D1 ou elimine-a com segurança após confirmar o nome exato."
+          }
+        }
+      }
+    },
+    "管理 Worker 的环境变量与密钥，随手增删改。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage a Worker’s environment variables and secrets — add, edit, and remove on the fly."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理 Worker 的環境變數與密鑰，隨手增刪改。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理 Worker 的環境變數與密鑰，隨手增刪改。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worker の環境変数とシークレットを管理し、いつでも追加・編集・削除できます。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestiona las variables de entorno y los secretos de un Worker: agrega, edita y elimina al instante."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worker의 환경 변수와 시크릿을 관리하고 언제든 추가·편집·삭제하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerencie as variáveis de ambiente e os segredos de um Worker: adicione, edite e remova na hora."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faça a gestão das variáveis de ambiente e dos segredos de um Worker: adicione, edite e remova na hora."
+          }
+        }
+      }
+    },
+    "管理 workers.dev 子域、自定义域与路由，掌控 Worker 的访问入口。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage the workers.dev subdomain, custom domains, and routes to control how a Worker is reached."
+          }
+        },
+        "zh-Hant": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理 workers.dev 子網域、自訂網域與路由，掌控 Worker 的存取入口。"
+          }
+        },
+        "zh-HK": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理 workers.dev 子域、自訂域名與路由，掌控 Worker 的存取入口。"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "workers.dev サブドメイン、カスタムドメイン、ルートを管理し、Worker へのアクセス経路を制御します。"
+          }
+        },
+        "es-MX": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gestiona el subdominio workers.dev, los dominios personalizados y las rutas para controlar cómo se accede a un Worker."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "workers.dev 서브도메인, 사용자 지정 도메인, 라우트를 관리해 Worker 접근 경로를 제어하세요."
+          }
+        },
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerencie o subdomínio workers.dev, domínios personalizados e rotas para controlar como um Worker é acessado."
+          }
+        },
+        "pt-PT": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faça a gestão do subdomínio workers.dev, domínios personalizados e rotas para controlar como um Worker é acedido."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
