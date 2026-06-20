@@ -83,22 +83,30 @@ extension View {
 
 private struct WhatsNewModifier: ViewModifier {
 
+    /// 呈现与内容绑定到同一个值：sheet 内容闭包始终拿到 evaluate() 算好的条目。
+    /// 旧写法用 .sheet(isPresented:) + 旁路 @State 存条目，两者在同一拍一起改时，
+    /// iOS 17 的内容闭包会捕获到赋值生效前一拍的空数组——弹窗弹出但条目全空
+    /// （iOS 18 正常）。改用 .sheet(item:) 让「弹」与「内容」原子绑定，跨版本一致。
+    private struct Payload: Identifiable {
+        let id = UUID()
+        let items: [WhatsNewItem]
+    }
+
     @AppStorage("lastSeenWhatsNewVersion") private var lastSeen = ""
-    @State private var items: [WhatsNewItem] = []
-    @State private var present = false
+    @State private var payload: Payload?
 
     func body(content: Content) -> some View {
         content
             .task { evaluate() }
-            .sheet(isPresented: $present) {
-                WhatsNewView(items: items) {
+            .sheet(item: $payload) { payload in
+                WhatsNewView(items: payload.items) {
                     lastSeen = WhatsNewStore.currentVersion
                 }
             }
     }
 
     private func evaluate() {
-        guard !present, items.isEmpty else { return }
+        guard payload == nil else { return }
         let current = WhatsNewStore.currentVersion
 
         // 全新安装（无 lastSeen 且本次启动并非已登录态）：静默对齐，不打扰新用户
@@ -113,8 +121,7 @@ private struct WhatsNewModifier: ViewModifier {
         if unseen.isEmpty {
             lastSeen = current          // 版本升了但无可展示内容：对齐，避免反复评估
         } else {
-            items = unseen
-            present = true
+            payload = Payload(items: unseen)   // 内容与呈现同时确定，避免 iOS 17 捕获旧值
         }
     }
 }
