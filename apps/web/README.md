@@ -1,6 +1,6 @@
 # Orange Cloud Web
 
-The landing page and OAuth callback relay for [Orange Cloud](https://github.com/chen2he/orange-cloud), deployed at [orange-cloud.chatiro.app](https://orange-cloud.chatiro.app) on Cloudflare Workers.
+The landing page and OAuth callback relay for [Orange Cloud](https://github.com/chen2he/orange-cloud), deployed at [o-c.do](https://o-c.do) on Cloudflare Workers.
 
 ## What this app does
 
@@ -32,13 +32,13 @@ What's wired up:
 
   ```bash
   curl -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json" -d '{
-    "host": "orange-cloud.chatiro.app",
+    "host": "o-c.do",
     "key": "ae4368227a78d73327c42c34949e9075",
-    "urlList": ["https://orange-cloud.chatiro.app/"]
+    "urlList": ["https://o-c.do/"]
   }'
   ```
 
-One-time manual steps (dashboard accounts required): verify the domain in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters), submit `https://orange-cloud.chatiro.app/sitemap.xml` in both, and optionally list `llms.txt` at [directory.llmstxt.cloud](https://directory.llmstxt.cloud) / [llmstxt.site](https://llmstxt.site).
+One-time manual steps (dashboard accounts required): verify the domain in [Google Search Console](https://search.google.com/search-console) and [Bing Webmaster Tools](https://www.bing.com/webmasters), submit `https://o-c.do/sitemap.xml` in both, and optionally list `llms.txt` at [directory.llmstxt.cloud](https://directory.llmstxt.cloud) / [llmstxt.site](https://llmstxt.site).
 
 ## Develop
 
@@ -63,4 +63,4 @@ pnpm cf-typegen   # regenerate cloudflare-env.d.ts after changing wrangler.jsonc
 pnpm deploy       # opennextjs-cloudflare build && deploy
 ```
 
-The official deployment uses the custom domain `orange-cloud.chatiro.app` (configured in `wrangler.jsonc` `routes`). For your own fork: change the `name` and `routes` in [`wrangler.jsonc`](wrangler.jsonc), deploy under your own Cloudflare account, then register `https://<your-domain>/oauth/callback` as the redirect URI of **your own** Cloudflare OAuth client (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).
+The official deployment uses the custom domain `o-c.do` (configured in `wrangler.jsonc` `routes`). For your own fork: change the `name` and `routes` in [`wrangler.jsonc`](wrangler.jsonc), deploy under your own Cloudflare account, then register `https://<your-domain>/oauth/callback` as the redirect URI of **your own** Cloudflare OAuth client (see [CONTRIBUTING.md](../../CONTRIBUTING.md)).

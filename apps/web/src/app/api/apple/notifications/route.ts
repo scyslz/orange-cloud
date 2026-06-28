@@ -13,7 +13,7 @@ import type { DecodedNotification } from "@/lib/appstore/types";
 //   200 处理成功（含未知类型、重复通知）；5xx 仅存储 / 瞬时错误（让 Apple 重试）。
 //
 // 配置：App Store Connect → App 信息 → App Store Server Notifications（Version 2），
-//   Production / Sandbox URL 都填 https://orange-cloud.chatiro.app/api/apple/notifications
+//   Production / Sandbox URL 都填 https://o-c.do/api/apple/notifications
 
 export const dynamic = "force-dynamic";
 

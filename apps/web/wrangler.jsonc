@@ -37,7 +37,11 @@
 	],
 	// Cloudflare Email Service（Email Sending）—— 发激活码邮件，绑定式、无需 API key。
 	// 发件域名须先 onboard：`wrangler email sending enable hz.do`。
-	"send_email": [{ "name": "EMAIL" }],
+	"send_email": [
+		{
+			"name": "EMAIL"
+		}
+	],
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name
@@ -51,12 +55,22 @@
 	},
 	// 每天 UTC 08:00 触发 custom-worker.ts 的 scheduled()，抓 App Store 各地区榜单名次。
 	"triggers": {
-		"crons": ["0 8 * * *"]
+		"crons": [
+			"0 8 * * *"
+		]
 	},
 	"routes": [
 		{
 			"pattern": "orange-cloud.chatiro.app",
 			"custom_domain": true
+		},
+		{
+			"pattern": "o-c.do",
+			"custom_domain": true,
+		},
+		{
+			"pattern": "www.o-c.do",
+			"custom_domain": true,
 		}
 	]
 }

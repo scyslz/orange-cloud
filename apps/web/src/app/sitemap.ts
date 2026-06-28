@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { routing } from "@/i18n/routing";
 
-const SITE_URL = "https://orange-cloud.chatiro.app";
+const SITE_URL = "https://o-c.do";
 
 function urlFor(locale: string, path: string) {
 	const prefix = locale === routing.defaultLocale ? "" : `/${locale}`;

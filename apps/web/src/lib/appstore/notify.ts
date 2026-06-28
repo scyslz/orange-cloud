@@ -85,7 +85,7 @@ export async function notifyAppleEvent(
 		title: msg.title,
 		body: msg.body,
 		group: msg.group,
-		icon: "https://orange-cloud.chatiro.app/icons/icon-64.png",
+		icon: "https://o-c.do/icons/icon-64.png",
 		// 真金白银的生产事件用 timeSensitive（穿透专注模式）；沙盒静默。
 		level: msg.isSandbox ? "passive" : "timeSensitive",
 		...(msg.isSandbox ? {} : { sound: "minuet" }),
