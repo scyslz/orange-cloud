@@ -9,17 +9,43 @@
 import Foundation
 
 /// Access 应用。列表只给概要；编辑前用 getApp 取详情（含 policies 的完整 include 规则）。
+/// 自托管应用可绑**多个**公共主机名：现行字段是 `destinations`（含 public/private 目标），
+/// 旧字段 `self_hosted_domains` 已弃用但 API 仍返回（含全部 public 目标的 URI）；只读 `domain`
+/// 只是其中第一个，**不能只取它**否则多主机名只显示第一个（issue：网页端绑 3 个子域，客户端只显示 1 个）。
 nonisolated struct AccessApp: Codable, Identifiable, Sendable {
-    let id:              String
-    let name:            String?
-    let domain:          String?
-    let type:            String?
-    let sessionDuration: String?
-    let policies:        [AccessPolicy]?
+    let id:                String
+    let name:              String?
+    let domain:            String?
+    let selfHostedDomains: [String]?
+    let destinations:      [AccessDestination]?
+    let type:              String?
+    let sessionDuration:   String?
+    let policies:          [AccessPolicy]?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, domain, type, policies
+        case id, name, domain, type, policies, destinations
+        case selfHostedDomains = "self_hosted_domains"
         case sessionDuration = "session_duration"
+    }
+
+    /// 全部公共主机名（保序去重，domain 优先）。destinations 的 public 目标 ∪ self_hosted_domains ∪ domain，
+    /// 三处取并集兼容新老应用形态；只要其一有值就能拿全。
+    var publicHostnames: [String] {
+        var seen = Set<String>()
+        var out: [String] = []
+        func add(_ value: String?) {
+            guard let value, !value.isEmpty, seen.insert(value).inserted else { return }
+            out.append(value)
+        }
+        add(domain)
+        for dest in destinations ?? [] where (dest.type ?? "public") == "public" { add(dest.uri) }
+        for host in selfHostedDomains ?? [] { add(host) }
+        return out
+    }
+
+    /// 写回时需原样保留的非 public 目标（如私有网络目标），避免编辑公共主机名时把它们误删
+    var nonPublicDestinations: [AccessDestination] {
+        (destinations ?? []).filter { ($0.type ?? "public") != "public" }
     }
 
     /// 应用类型可读名
@@ -37,6 +63,13 @@ nonisolated struct AccessApp: Codable, Identifiable, Sendable {
         case let other:      other
         }
     }
+}
+
+/// Access 应用的目标（`destinations` 取代 `self_hosted_domains`）：
+/// type=public 是公共主机名，type=private 是私有网络目标（IP/私有主机名）。
+nonisolated struct AccessDestination: Codable, Sendable {
+    let type: String?
+    let uri:  String?
 }
 
 /// Access 策略（可复用资源；应用通过 id 引用）
@@ -152,15 +185,23 @@ nonisolated struct AccessPolicyInput: Codable, Sendable {
 
 nonisolated struct AccessAppInput: Codable, Sendable {
     let name:            String
-    let domain:          String
+    let domain:          String                       // 主主机名（第一个），保留兼容
+    let destinations:    [AccessDestinationInput]?    // 全部目标（多公共主机名 + 保留的私有目标）
     let type:            String
     let sessionDuration: String?
     let policies:        [String]      // 引用的策略 ID
 
     enum CodingKeys: String, CodingKey {
-        case name, domain, type, policies
+        case name, domain, type, policies, destinations
         case sessionDuration = "session_duration"
     }
+}
+
+/// 写回用的单个目标。PUT 是全量替换：编辑公共主机名时必须把**全部**主机名（及原有私有目标）一起回写，
+/// 否则会把未提交的主机名删掉（此前只回写 domain 单值 → 多主机名应用一保存就被删到只剩一个）。
+nonisolated struct AccessDestinationInput: Codable, Sendable {
+    let type: String
+    let uri:  String
 }
 
 /// Access 会话时长预设

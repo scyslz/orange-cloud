@@ -388,10 +388,20 @@ final class AuthManager {
         return try await task.value
     }
 
-    /// 实际刷新逻辑：仅在刷新令牌确已失效（token 端点 400）时移除该身份；
-    /// 网络中断 / 超时 / 5xx / 429 等瞬时失败保留身份并原样抛出，交由调用方稍后重试，
-    /// 避免一次网络抖动就把用户登出（其他身份始终不受影响）。
+    /// 实际刷新逻辑。三条铁律：
+    /// ① **跨进程串行化**：先抢共享 App Group 文件锁（[[RefreshGate]]），避免与「文件」扩展并发刷新
+    ///    同一个轮转 refresh token——并发会触发 Cloudflare 复用检测吊销整条令牌链（卡死登录态的根因）。
+    /// ② **服务端明确拒绝（token 端点 4xx）才登出**：400/401/403 = 刷新令牌失效/被撤销/被复用吊销，
+    ///    登出该身份回登录页（一键重授权恢复），不再卡死；网络/超时/5xx/429 等瞬时失败保留身份原样抛出。
+    /// ③ **轮换自愈**：拿锁后才读 token（用钥匙串里最新一份去刷新，而非调用时手里的陈旧令牌）；被拒时
+    ///    若发现 refresh token 已被别的进程轮换走，用新令牌重试一次再判定，避免良性竞态误登出。
     private func performTokenRefresh(sessionId: UUID) async throws -> String {
+        // 跨进程独占锁（best-effort，拿不到也照常刷）
+        let lock = await RefreshGate.acquire(sessionId: sessionId.uuidString)
+        defer { RefreshGate.release(lock) }
+
+        // 拿到锁后才读 token：等锁期间另一进程可能已把令牌轮换掉，这里读到的是最新一份，
+        // 用它去刷新（而非调用时手里那份陈旧令牌），避免拿着旧令牌去刷触发复用检测。
         guard let stored = TokenStore.load(sessionId: sessionId) else {
             // 钥匙串读不到该身份 token：多半是切账号竞态下的陈旧请求，或确已被清。
             // 保留身份、抛出由调用方当未授权处理——绝不在此删身份（曾导致多账号雪崩登出）。
@@ -406,7 +416,7 @@ final class AuthManager {
         }
 
         // 诊断（issue #5 历史）：对比当前刷新令牌指纹与「我们最后写入」的基线。
-        // 移除 iCloud 同步后正常应恒等；不一致说明令牌被本进程之外改写过。usedFP/baselineFP 提到 do 外，catch 也能引用。
+        // 移除 iCloud 同步后正常应恒等；不一致说明令牌被本进程之外改写过。
         let usedFP = AuthDiagnostics.fingerprint(refreshToken)
         let baselineFP = AuthDiagnostics.lastWrittenFingerprint(sessionId)
         AppLog.auth.info("refresh attempt session=\(sessionId.uuidString) usedRefreshFP=\(usedFP) lastWrittenFP=\(baselineFP ?? "nil") accessExpiresInSec=\(Int(stored.expiresAt.timeIntervalSinceNow))")
@@ -415,28 +425,41 @@ final class AuthManager {
         }
 
         do {
-            let response = try await requestToken(parameters: [
-                "grant_type":    "refresh_token",
-                "client_id":     OAuthConfig.clientID,
-                "refresh_token": refreshToken,
-            ])
-            let newToken = TokenStore.StoredToken(
-                accessToken:  response.accessToken,
-                refreshToken: response.refreshToken ?? refreshToken,
-                expiresAt:    Date().addingTimeInterval(TimeInterval(response.expiresIn)),
-                scope:        response.scope ?? stored.scope
-            )
-            TokenStore.save(newToken, sessionId: sessionId)
-            AuthDiagnostics.recordWrite(refreshToken: newToken.refreshToken, sessionId: sessionId)
-            AppLog.auth.info("refresh ok session=\(sessionId.uuidString) newRefreshFP=\(AuthDiagnostics.fingerprint(newToken.refreshToken))")
-            return newToken.accessToken
-        } catch let AuthError.tokenEndpointError(status, _) where status == 400 {
-            // OAuth 标准：刷新令牌失效 / 被撤销 / 过期返回 400，确需重新授权
-            AppLog.auth.error("refresh rejected 400 (invalid_grant) → logout. usedRefreshFP=\(usedFP) lastWrittenFP=\(baselineFP ?? "nil")")
+            return try await requestAndStoreRefresh(sessionId: sessionId, refreshToken: refreshToken, previousScope: stored.scope)
+        } catch let AuthError.tokenEndpointError(status, _) where (400...403).contains(status) {
+            // token 端点 4xx = 服务端明确拒绝该刷新令牌。先看是否被别的进程轮换走了：
+            // 钥匙串里若已出现不同的 refresh token，用它重试一次（多账号 / 扩展并发下的良性竞态）。
+            if let latest = TokenStore.load(sessionId: sessionId),
+               let rotated = latest.refreshToken, rotated != refreshToken,
+               let token = try? await requestAndStoreRefresh(sessionId: sessionId, refreshToken: rotated, previousScope: latest.scope) {
+                AppLog.auth.notice("refresh rejected \(status) but keychain rotated by another process → recovered with fresh token. session=\(sessionId.uuidString)")
+                return token
+            }
+            // 确属失效：登出该身份（回登录页，一键重授权恢复），不再卡死登录态
+            AppLog.auth.error("refresh rejected \(status) (invalid_grant) → logout. usedRefreshFP=\(usedFP) lastWrittenFP=\(baselineFP ?? "nil")")
             removeSession(sessionId)
             throw AuthError.notLoggedIn
         }
         // 其它错误（网络 / 超时 / 5xx / 429）：保留身份，原样向上抛出
+    }
+
+    /// 用给定 refresh token 向 token 端点换新令牌、写回钥匙串并返回新 access token。
+    private func requestAndStoreRefresh(sessionId: UUID, refreshToken: String, previousScope: String) async throws -> String {
+        let response = try await requestToken(parameters: [
+            "grant_type":    "refresh_token",
+            "client_id":     OAuthConfig.clientID,
+            "refresh_token": refreshToken,
+        ])
+        let newToken = TokenStore.StoredToken(
+            accessToken:  response.accessToken,
+            refreshToken: response.refreshToken ?? refreshToken,
+            expiresAt:    Date().addingTimeInterval(TimeInterval(response.expiresIn)),
+            scope:        response.scope ?? previousScope
+        )
+        TokenStore.save(newToken, sessionId: sessionId)
+        AuthDiagnostics.recordWrite(refreshToken: newToken.refreshToken, sessionId: sessionId)
+        AppLog.auth.info("refresh ok session=\(sessionId.uuidString) newRefreshFP=\(AuthDiagnostics.fingerprint(newToken.refreshToken))")
+        return newToken.accessToken
     }
 
     private func requestToken(parameters: [String: String]) async throws -> TokenResponse {

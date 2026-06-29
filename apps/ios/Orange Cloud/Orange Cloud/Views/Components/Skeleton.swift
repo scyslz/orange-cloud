@@ -13,8 +13,12 @@ import SwiftUI
 
 private struct SkeletonPulse: ViewModifier {
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.appReduceMotion) private var appReduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @State private var dimmed = false
+
+    /// App 开关 ∨ 系统「减弱动态效果」，任一开启即静止
+    private var reduceMotion: Bool { appReduceMotion || systemReduceMotion }
 
     func body(content: Content) -> some View {
         content

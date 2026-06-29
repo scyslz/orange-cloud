@@ -172,9 +172,13 @@ struct HorizonArc: View {
 /// 岛屿按序浮现（开启「减弱动态效果」时直接显示）
 private struct IslandReveal: ViewModifier {
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.appReduceMotion) private var appReduceMotion
+    @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     let index: Int
     @State private var shown = false
+
+    /// App 开关 ∨ 系统「减弱动态效果」，任一开启即跳过浮现动画
+    private var reduceMotion: Bool { appReduceMotion || systemReduceMotion }
 
     func body(content: Content) -> some View {
         content

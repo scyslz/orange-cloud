@@ -254,7 +254,7 @@ nonisolated struct D1UsageSum: Codable, Sendable {
 }
 
 /// D1 用量聚合
-nonisolated struct D1Usage: Sendable {
+nonisolated struct D1Usage: Codable, Sendable {
     let rowsReadToday:     Int
     let rowsWrittenToday:  Int
     let rowsReadPeriod:    Int
@@ -381,7 +381,7 @@ nonisolated struct KVStorageMax: Codable, Sendable {
 }
 
 /// KV 用量聚合
-nonisolated struct KVUsage: Sendable {
+nonisolated struct KVUsage: Codable, Sendable {
     let readsToday:   Int
     let writesToday:  Int
     let readsPeriod:  Int
@@ -390,7 +390,7 @@ nonisolated struct KVUsage: Sendable {
 
 // MARK: - 聚合结果
 
-nonisolated struct AccountUsage: Sendable {
+nonisolated struct AccountUsage: Codable, Sendable {
     let workersRequestsToday: Int
     let workersRequestsMonth: Int
     let workersErrorsMonth:   Int

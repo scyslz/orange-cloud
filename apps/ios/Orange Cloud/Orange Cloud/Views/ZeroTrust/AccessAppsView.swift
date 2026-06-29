@@ -56,7 +56,7 @@ struct AccessAppsView: View {
             Text("当前授权未包含 Access 写权限（access.write）。\n请在设置中退出登录后重新授权以启用此功能。")
         }
         .confirmationDialog(
-            deleteTarget.map { String(localized: "删除应用「\($0.name ?? $0.domain ?? "")」？") } ?? "",
+            deleteTarget.map { String(localized: "删除应用「\($0.name ?? $0.publicHostnames.first ?? "")」？") } ?? "",
             isPresented: Binding(get: { deleteTarget != nil }, set: { if !$0 { deleteTarget = nil } }),
             titleVisibility: .visible
         ) {
@@ -125,10 +125,13 @@ struct AccessAppsView: View {
         HStack(spacing: 12) {
             TintIcon(systemImage: "lock.shield", color: .ocOrange)
             VStack(alignment: .leading, spacing: 3) {
-                Text(app.name?.isEmpty == false ? app.name! : (app.domain ?? "—"))
+                Text(app.name?.isEmpty == false ? app.name! : (app.publicHostnames.first ?? "—"))
                     .font(.callout).foregroundStyle(.primary).lineLimit(1)
-                if let domain = app.domain, !domain.isEmpty {
-                    Text(domain).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                if let first = app.publicHostnames.first {
+                    // 多主机名时主机名后缀「+N」，提示这个应用绑了不止一个公共主机名
+                    let extra = app.publicHostnames.count - 1
+                    Text(extra > 0 ? "\(first) +\(extra)" : first)
+                        .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
             }
             Spacer(minLength: 8)

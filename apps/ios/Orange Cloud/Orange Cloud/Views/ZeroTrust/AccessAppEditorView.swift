@@ -29,8 +29,15 @@ struct AccessAppEditorView: View {
         var value: String
     }
 
+    private struct HostnameRow: Identifiable {
+        let id = UUID()
+        var value: String
+    }
+
     @State private var name = ""
-    @State private var domain = ""
+    @State private var hostnames: [HostnameRow] = [HostnameRow(value: "")]
+    /// 原应用的非 public 目标（私有网络目标），编辑公共主机名时原样保留回写，避免误删
+    @State private var preservedDestinations: [AccessDestination] = []
     @State private var sessionDuration = AccessSessionDuration.h24.rawValue
     @State private var decision = AccessDecision.allow
     @State private var rules: [RuleRow] = [RuleRow(kind: .everyone, value: "")]
@@ -45,7 +52,13 @@ struct AccessAppEditorView: View {
     private var isCreate: Bool { mode == .create }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedDomain: String { domain.trimmingCharacters(in: .whitespacesAndNewlines) }
+    /// 去空白、去空值、保序去重后的全部公共主机名
+    private var trimmedHostnames: [String] {
+        var seen = Set<String>()
+        return hostnames
+            .map { $0.value.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty && seen.insert($0).inserted }
+    }
 
     /// 规则有效：所有人无需值；其余需非空值
     private var rulesValid: Bool {
@@ -55,7 +68,7 @@ struct AccessAppEditorView: View {
     private var canEditRules: Bool { isCreate || editablePolicyId != nil }
 
     private var canSave: Bool {
-        guard !trimmedName.isEmpty, !trimmedDomain.isEmpty, !viewModel.isSaving else { return false }
+        guard !trimmedName.isEmpty, !trimmedHostnames.isEmpty, !viewModel.isSaving else { return false }
         return canEditRules ? rulesValid : true
     }
 
@@ -98,13 +111,26 @@ struct AccessAppEditorView: View {
         Group {
             Section {
                 TextField("名称", text: $name).disabled(viewModel.isSaving)
-                TextField("应用域名（如 app.example.com）", text: $domain)
-                    .textInputAutocapitalization(.never).autocorrectionDisabled()
-                    .keyboardType(.URL).disabled(viewModel.isSaving)
             } header: {
                 Text("应用")
+            }
+            Section {
+                ForEach($hostnames) { $row in
+                    TextField("应用域名（如 app.example.com）", text: $row.value)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .keyboardType(.URL).disabled(viewModel.isSaving)
+                }
+                .onDelete { hostnames.remove(atOffsets: $0) }
+                Button {
+                    hostnames.append(HostnameRow(value: ""))
+                } label: {
+                    Label("添加主机名", systemImage: "plus")
+                }
+                .disabled(viewModel.isSaving)
+            } header: {
+                Text("公共主机名")
             } footer: {
-                Text("自托管应用：Access 会保护该域名（及路径）。")
+                Text("自托管应用可保护多个公共主机名（及路径），第一个为主域名。左滑删除。")
             }
             Section {
                 Picker("会话时长", selection: $sessionDuration) {
@@ -177,7 +203,9 @@ struct AccessAppEditorView: View {
         defer { loadingDetail = false }
         guard let app = await viewModel.detail(appId: appId) else { prefilled = true; return }
         name = app.name ?? ""
-        domain = app.domain ?? ""
+        let hosts = app.publicHostnames
+        hostnames = hosts.isEmpty ? [HostnameRow(value: "")] : hosts.map { HostnameRow(value: $0) }
+        preservedDestinations = app.nonPublicDestinations
         if let sd = app.sessionDuration, !sd.isEmpty { sessionDuration = sd }
         policyIds = (app.policies ?? []).compactMap(\.id)
 
@@ -206,7 +234,7 @@ struct AccessAppEditorView: View {
         switch mode {
         case .create:
             ok = await viewModel.create(
-                name: trimmedName, domain: trimmedDomain,
+                name: trimmedName, hostnames: trimmedHostnames,
                 sessionDuration: sessionDuration, decision: decision.rawValue, include: buildInclude()
             )
         case .edit(let appId):
@@ -214,8 +242,9 @@ struct AccessAppEditorView: View {
                 editablePolicyId.map { ($0, decision.rawValue, buildInclude()) }
             ok = await viewModel.update(
                 appId: appId, policyIds: policyIds,
-                name: trimmedName, domain: trimmedDomain, sessionDuration: sessionDuration,
-                policyPatch: patch
+                name: trimmedName, hostnames: trimmedHostnames,
+                preservedDestinations: preservedDestinations,
+                sessionDuration: sessionDuration, policyPatch: patch
             )
         }
         if ok { onSuccess(); dismiss() }

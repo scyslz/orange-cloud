@@ -35,15 +35,26 @@ extension View {
     }
 }
 
+// MARK: - 统一动效信号
+
+private struct AppReduceMotionKey: EnvironmentKey {
+    static let defaultValue = false
+}
+
+extension EnvironmentValues {
+    /// App 设置里「减少动画」开关的值（独立于系统辅助功能「减弱动态效果」）。在根视图注入，
+    /// 让系统级转场（Zoom 导航转场）与自定义动画（玻璃岛浮现 / 骨架闪烁）都能跟着这个开关走——
+    /// 否则开关只接了全局 .transaction，盖不住导航转场与只读系统设置的浮现动画，用户感觉「开了没用」。
+    var appReduceMotion: Bool {
+        get { self[AppReduceMotionKey.self] }
+        set { self[AppReduceMotionKey.self] = newValue }
+    }
+}
+
 extension View {
-    /// 详情页：iOS 18+ 应用 Zoom 导航转场；iOS 17 原样返回（标准 push）。
-    @ViewBuilder
-    func zoomNavigationTransition(sourceID: some Hashable, in namespace: Namespace.ID) -> some View {
-        if #available(iOS 18.0, *) {
-            navigationTransition(.zoom(sourceID: sourceID, in: namespace))
-        } else {
-            self
-        }
+    /// 详情页：iOS 18+ 应用 Zoom 导航转场；iOS 17 或开启「减少动画」时原样返回（标准 push）。
+    func zoomNavigationTransition<ID: Hashable>(sourceID: ID, in namespace: Namespace.ID) -> some View {
+        modifier(ZoomNavigationTransition(sourceID: sourceID, namespace: namespace))
     }
 
     /// 源视图（列表行）：iOS 18+ 标记 Zoom 转场源；iOS 17 无操作。
@@ -75,6 +86,23 @@ extension View {
             symbolEffect(.bounce, options: .nonRepeating)
         } else {
             self
+        }
+    }
+}
+
+/// Zoom 导航转场（iOS 18+），开启「减少动画」时降级为标准 push。
+/// 读环境注入的 appReduceMotion——系统「减弱动态效果」由系统自动让 .zoom 回退，这里只额外接 App 开关。
+private struct ZoomNavigationTransition<ID: Hashable>: ViewModifier {
+    @Environment(\.appReduceMotion) private var appReduceMotion
+    let sourceID: ID
+    let namespace: Namespace.ID
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *), !appReduceMotion {
+            content.navigationTransition(.zoom(sourceID: sourceID, in: namespace))
+        } else {
+            content
         }
     }
 }

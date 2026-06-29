@@ -1,5 +1,46 @@
 [
   {
+    "version": "1.8.1",
+    "date": "2026.06.30",
+    "channel": "App Store",
+    "inApp": false,
+    "items": [
+      {
+        "icon": "wrench.and.screwdriver.fill",
+        "title": {
+          "zh-Hans": "稳定性与体验修复",
+          "en": "Stability & experience fixes",
+          "zh-Hant": "穩定性與體驗修復",
+          "zh-HK": "穩定性與體驗修復",
+          "ja": "安定性と使い勝手の修正",
+          "es-MX": "Correcciones de estabilidad y experiencia",
+          "ko": "안정성 및 사용성 개선",
+          "pt-BR": "Correções de estabilidade e experiência",
+          "pt-PT": "Correções de estabilidade e experiência",
+          "de": "Stabilitäts- und Erlebnisverbesserungen",
+          "fr": "Corrections de stabilité et d’expérience",
+          "ar": "تحسينات الاستقرار والتجربة",
+          "tr": "Kararlılık ve deneyim düzeltmeleri"
+        },
+        "detail": {
+          "zh-Hans": "修复 Access 应用多个公共主机名只显示第一个、长时间使用后保持登录却刷新不出数据、重装后存储桶在「文件」App 重复挂载等问题，并优化「减少动画」开关与概览用量加载。",
+          "en": "Fixes an Access app showing only the first of multiple public hostnames, a rare “stays signed in but won’t refresh data” after long use, and duplicate R2 bucket mounts in Files after reinstalling; also improves the Reduce Animations toggle and Overview usage loading.",
+          "zh-Hant": "修復 Access 應用程式多個公開主機名稱只顯示第一個、長時間使用後保持登入卻無法重新整理資料、重新安裝後儲存桶在「檔案」App 重複掛載等問題，並優化「減少動畫」開關與總覽用量載入。",
+          "zh-HK": "修復 Access 應用程式多個公開主機名稱只顯示第一個、長時間使用後保持登入卻無法重新整理資料、重新安裝後儲存桶在「檔案」App 重複掛載等問題，並優化「減少動畫」開關與概覽用量載入。",
+          "ja": "Access の複数の公開ホスト名が最初の1つしか表示されない問題、長時間使用後にログイン状態のままデータを更新できない問題、再インストール後に「ファイル」で R2 バケットが重複マウントされる問題を修正し、「アニメーションを減らす」スイッチと概要の使用状況の読み込みを改善しました。",
+          "es-MX": "Corrige que una app de Access muestre solo el primero de varios nombres de host públicos, un raro “sesión iniciada pero sin actualizar datos” tras un uso prolongado y los montajes duplicados de buckets R2 en Archivos tras reinstalar; también mejora Reducir animaciones y la carga de uso en Resumen.",
+          "ko": "Access 앱에서 여러 공개 호스트 이름 중 첫 번째만 표시되던 문제, 장시간 사용 후 로그인 상태가 유지되지만 데이터가 새로 고쳐지지 않던 문제, 재설치 후 '파일'에서 R2 버킷이 중복 마운트되던 문제를 수정하고 '애니메이션 줄이기' 스위치와 개요 사용량 로딩을 개선했습니다.",
+          "pt-BR": "Corrige um app do Access que mostrava apenas o primeiro de vários nomes de host públicos, um raro “continua conectado mas não atualiza os dados” após uso prolongado e montagens duplicadas de buckets R2 em Arquivos após reinstalar; também melhora Reduzir animações e o carregamento de uso na Visão geral.",
+          "pt-PT": "Corrige uma app do Access que mostrava apenas o primeiro de vários nomes de anfitrião públicos, um raro “mantém a sessão iniciada mas não atualiza os dados” após uso prolongado e montagens duplicadas de buckets R2 em Ficheiros após reinstalar; também melhora Reduzir animações e o carregamento de utilização na Vista geral.",
+          "de": "Behebt, dass eine Access-App nur den ersten von mehreren öffentlichen Hostnamen anzeigte, ein seltenes „bleibt angemeldet, aktualisiert aber keine Daten“ nach langer Nutzung und doppelte R2-Bucket-Einbindungen in „Dateien“ nach einer Neuinstallation; verbessert außerdem „Animationen reduzieren“ und das Laden der Nutzung in der Übersicht.",
+          "fr": "Corrige une app Access n’affichant que le premier de plusieurs noms d’hôte publics, un rare « reste connecté mais n’actualise pas les données » après une utilisation prolongée et les montages en double de buckets R2 dans Fichiers après une réinstallation ; améliore aussi Réduire les animations et le chargement de l’utilisation dans l’aperçu.",
+          "ar": "يُصلح ظهور أول اسم فقط من بين عدة أسماء مضيفين عامة في تطبيق Access، ومشكلة نادرة وهي «يبقى تسجيل الدخول لكن لا تتحدّث البيانات» بعد الاستخدام الطويل، وتكرار تحميل حاويات R2 في «الملفات» بعد إعادة التثبيت؛ كما يحسّن مفتاح «تقليل الحركة» وتحميل الاستخدام في النظرة العامة.",
+          "tr": "Bir Access uygulamasının birden çok genel ana makine adından yalnızca ilkini göstermesini, uzun kullanımdan sonra nadiren görülen “oturum açık kalır ama veriler yenilenmez” sorununu ve yeniden yükleme sonrası Dosyalar’da yinelenen R2 paketi bağlamalarını giderir; ayrıca Animasyonları Azalt anahtarını ve Genel Bakış kullanım yüklemesini iyileştirir."
+        }
+      }
+    ]
+  },
+  {
     "version": "1.8.0",
     "date": "2026.06.29",
     "channel": "App Store",

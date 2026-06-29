@@ -1,6 +1,158 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "添加主机名" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة اسم مضيف"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hostname hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Hostname"
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar nombre de host"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un nom d’hôte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ホスト名を追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "호스트 이름 추가"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar nome de host"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar nome de anfitrião"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ana makine adı ekle"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增主機名稱"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增主機名稱"
+          }
+        }
+      }
+    },
+    "自托管应用可保护多个公共主机名（及路径），第一个为主域名。左滑删除。" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يمكن للتطبيقات المُستضافة ذاتيًا حماية عدة أسماء مضيفين عامة (ومسارات). الأول هو النطاق الأساسي. اسحب للحذف."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selbst gehostete Apps können mehrere öffentliche Hostnamen (und Pfade) schützen. Der erste ist die primäre Domain. Wischen zum Löschen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Self-hosted apps can protect multiple public hostnames (and paths). The first is the primary domain. Swipe to delete."
+          }
+        },
+        "es-MX" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las apps autoalojadas pueden proteger varios nombres de host públicos (y rutas). El primero es el dominio principal. Desliza para eliminar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les apps auto-hébergées peuvent protéger plusieurs noms d’hôte publics (et chemins). Le premier est le domaine principal. Glissez pour supprimer."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セルフホストのアプリは複数のパブリックホスト名（とパス）を保護できます。最初のものがメインのドメインです。スワイプで削除。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자체 호스팅 앱은 여러 공개 호스트 이름(및 경로)을 보호할 수 있습니다. 첫 번째가 기본 도메인입니다. 밀어서 삭제."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apps auto-hospedados podem proteger vários nomes de host públicos (e caminhos). O primeiro é o domínio principal. Deslize para excluir."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As apps auto-alojadas podem proteger vários nomes de anfitrião públicos (e caminhos). O primeiro é o domínio principal. Deslize para eliminar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kendi sunucunuzda barındırılan uygulamalar birden çok genel ana makine adını (ve yolları) koruyabilir. İlki birincil etki alanıdır. Silmek için kaydırın."
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自架應用程式可保護多個公開主機名稱（及路徑），第一個為主域名。左滑刪除。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自架應用程式可保護多個公開主機名稱（及路徑），第一個為主網域。左滑刪除。"
+          }
+        }
+      }
+    },
     "端点推送" : {
       "localizations" : {
         "ar" : {

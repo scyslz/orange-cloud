@@ -156,6 +156,10 @@ final class DashboardViewModel {
     /// 账号用量（Workers/R2）。同一账号只拉一次，下拉刷新强制重拉。
     /// 周期起点优先级：订阅接口（best-effort）→ 手动账单日（fallbackPeriodStart）→ 自然月。
     func loadUsage(accountId: String, fallbackPeriodStart: Date? = nil, force: Bool = false) async {
+        // 先用上次缓存即时填充（VM 被重建后切回概览不再空白重载），随后照常后台静默刷新
+        if usage == nil, let cached = UsageCache.load(accountId: accountId) {
+            usage = cached
+        }
         guard force || usageLoadedForAccount != accountId else { return }
         if let usageTask {
             await usageTask.value
@@ -273,6 +277,7 @@ final class DashboardViewModel {
             self.usage = usage
             usageLoadFailed = false
             usageLoadedForAccount = accountId
+            UsageCache.save(usage, accountId: accountId)   // 落盘供下次切回即时显示
             persistAnalyticsAvailability(true)
         } else {
             // 账号级分析全部失败（多为 GraphQL 数据集权限问题，见网络日志 "graphQL error"）。
@@ -352,5 +357,30 @@ final class DashboardViewModel {
         WidgetCenter.shared.reloadTimelines(ofKind: "ZoneStatusWidget")
         // 数据刷新后把最新快照推给 Apple Watch
         WatchSessionManager.shared.pushCurrentState()
+    }
+}
+
+/// 概览用量的本地缓存（按账号）。VM 在 iPad 侧栏返回概览时会被重建，内存里的 usage 随之丢失 →
+/// 每次切回都空白重载。缓存让「先显示上次数据、后台静默刷新」成立，切回即有数。
+nonisolated enum UsageCache {
+
+    private static let key = "dashboardUsageByAccount"
+
+    private static func loadMap() -> [String: AccountUsage] {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let map = try? JSONDecoder().decode([String: AccountUsage].self, from: data) else { return [:] }
+        return map
+    }
+
+    static func load(accountId: String) -> AccountUsage? {
+        loadMap()[accountId]
+    }
+
+    static func save(_ usage: AccountUsage, accountId: String) {
+        var map = loadMap()
+        map[accountId] = usage
+        if let data = try? JSONEncoder().encode(map) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
     }
 }

@@ -262,8 +262,18 @@ actor R2FileProviderClient {
 
     private func refresh(stored: StoredToken) async throws -> String {
         if let task = refreshTask { return try await task.value }
-        guard let refreshToken = stored.refreshToken else { throw ClientError.notAuthenticated }
+        let sessionId = credentials.sessionId.uuidString
         let task = Task<String, Error> {
+            // 跨进程独占锁：避免与主 App 并发刷新同一个轮转 refresh token——Cloudflare 单次有效令牌
+            // 被两进程同时用会触发复用检测吊销整条令牌链，主 App 随后卡死登录态。best-effort，拿不到也照常刷。
+            let lock = await RefreshGate.acquire(sessionId: sessionId)
+            defer { RefreshGate.release(lock) }
+
+            // 等锁期间主 App 可能已把令牌轮换掉：重读共享钥匙串，用最新一份去刷新
+            // （而非调用时手里那份陈旧令牌），避免拿旧令牌刷新触发复用检测。
+            let current = loadToken() ?? stored
+            guard let refreshToken = current.refreshToken else { throw ClientError.notAuthenticated }
+
             var request = URLRequest(url: Self.oauthTokenURL)
             request.httpMethod = "POST"
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
@@ -281,7 +291,7 @@ actor R2FileProviderClient {
                 accessToken: tr.access_token,
                 refreshToken: tr.refresh_token ?? refreshToken,
                 expiresAt: Date().addingTimeInterval(TimeInterval(tr.expires_in)),
-                scope: tr.scope ?? stored.scope
+                scope: tr.scope ?? current.scope
             )
             saveToken(newToken)
             return newToken.accessToken
