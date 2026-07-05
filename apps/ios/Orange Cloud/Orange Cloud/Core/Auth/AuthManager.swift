@@ -265,12 +265,20 @@ final class AuthManager {
         let challenge = PKCEHelper.generateCodeChallenge(from: verifier)
         let state     = UUID().uuidString
 
+        // CF dash OAuth（Hydra 系）只在请求 offline_access 时才签发 refresh token；
+        // 2026-06-29 client 轮换后不带它的新登录拿不到 refresh token，access token
+        // 到期即会话搁浅（重授权横幅反复出现的根因）。在此单一咽喉点统一追加，
+        // 覆盖登录与重授权两条流，勿在 UI 层散落。wrangler 同样携带该 scope。
+        let scopeWithOffline = scopeString.components(separatedBy: " ").contains("offline_access")
+            ? scopeString
+            : scopeString + " offline_access"
+
         var components = URLComponents(url: OAuthConfig.authorizationURL, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "response_type",         value: "code"),
             URLQueryItem(name: "client_id",             value: OAuthConfig.clientID),
             URLQueryItem(name: "redirect_uri",          value: OAuthConfig.redirectURI),
-            URLQueryItem(name: "scope",                 value: scopeString),
+            URLQueryItem(name: "scope",                 value: scopeWithOffline),
             URLQueryItem(name: "state",                 value: state),
             URLQueryItem(name: "code_challenge",        value: challenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),

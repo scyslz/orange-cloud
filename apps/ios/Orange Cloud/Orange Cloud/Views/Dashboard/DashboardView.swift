@@ -17,7 +17,17 @@ import WidgetKit
 /// `-[UINavigationBar layoutSubviews]` 对此硬断言（"top item belongs to a different
 /// navigation bar"）——冷启动账号加载完成时 id 从 nil 翻转，概览页必崩（17.1 起系统才修复）。
 /// 1.5.1 曾误诊为 TipKit popover。账号维度的 @Query 谓词刷新由栈内的 `.id` 完成。
+///
+/// **`.navigationDestination` 必须挂在这里（栈根直接子级）、且写在 `.id(账号)` 的内侧**：
+/// ① navdest 注册在栈内容的嵌套子视图（DashboardHomeView 内层）时，iOS 17.0 push 会陷入
+///   AttributeGraph 无限更新循环，主线程 100% 整 App 冻结（tab bar 都不响应）；26.5 无恙。
+///   与 `.id(账号)` 无关（实测二分，详见 ZoneListView 外壳注释）。
+/// ② 但 navdest 也不能写在 `.id()` 之后（`content.id(...).navigationDestination(...)`）：
+///   账号切换 id 翻转时 iOS 17.0 在 `-[UINavigationBar layoutSubviews]` 硬断言必崩（实测）。
+/// 唯一两全的形态 = 外壳栈根 + `.id` 内侧：`content.navigationDestination(...).id(...)`。
 struct DashboardView: View {
+
+    @Environment(AuthManager.self) private var auth
 
     private let session: SessionStore
 
@@ -25,9 +35,35 @@ struct DashboardView: View {
         self.session = session
     }
 
+    private var currentAccountId: String {
+        session.selectedAccount?.id ?? ""
+    }
+
     var body: some View {
         NavigationStack {
             DashboardHomeView(session: session)
+                .navigationDestination(for: CachedZone.self) { zone in
+                    ZoneDetailView(zone: zone, session: session)
+                }
+                // Tunnel 全链路（列表 → 详情 → 连接信息）都挂在栈根：单一栈、不嵌套，
+                // 逐级 push 才在 iOS 17.0 正常（同 DeveloperHubView 的 DevHubRoute 做法）
+                .navigationDestination(for: DashboardRoute.self) { route in
+                    switch route {
+                    case .tunnels:
+                        TunnelListView(session: session)
+                    case .tunnelConnect(let tunnel):
+                        TunnelConnectView(tunnel: tunnel, accountId: currentAccountId, session: session)
+                    }
+                }
+                .navigationDestination(for: Tunnel.self) { tunnel in
+                    TunnelDetailView(
+                        tunnel: tunnel,
+                        accountId: currentAccountId,
+                        session: session,
+                        canWrite: auth.hasScope("argotunnel.write"),
+                        canWriteDNS: auth.hasScope("dns.write")
+                    )
+                }
                 .id(session.selectedAccount?.id)
         }
     }
@@ -168,28 +204,9 @@ private struct DashboardHomeView: View {
         }
         .background { SkyBackground() }
         .navigationBarTitleDisplayMode(.inline)
-        .navigationDestination(for: CachedZone.self) { zone in
-            ZoneDetailView(zone: zone, session: session)
-        }
-        // Tunnel 全链路（列表 → 详情 → 连接信息）都挂在栈根：单一栈、不嵌套，
-        // 逐级 push 才在 iOS 17.0 正常（同 DeveloperHubView 的 DevHubRoute 做法）
-        .navigationDestination(for: DashboardRoute.self) { route in
-            switch route {
-            case .tunnels:
-                TunnelListView(session: session)
-            case .tunnelConnect(let tunnel):
-                TunnelConnectView(tunnel: tunnel, accountId: currentAccountId, session: session)
-            }
-        }
-        .navigationDestination(for: Tunnel.self) { tunnel in
-            TunnelDetailView(
-                tunnel: tunnel,
-                accountId: currentAccountId,
-                session: session,
-                canWrite: auth.hasScope("argotunnel.write"),
-                canWriteDNS: auth.hasScope("dns.write")
-            )
-        }
+        // CachedZone / DashboardRoute / Tunnel 的 .navigationDestination 全部挂在外壳
+        // DashboardView 的栈根，不能挂回这里：iOS 17.0 上 navdest 注册在栈内容的嵌套
+        // 子视图会在 push 时触发 AttributeGraph 无限循环整 App 冻结（见外壳注释）。
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 accountMenu

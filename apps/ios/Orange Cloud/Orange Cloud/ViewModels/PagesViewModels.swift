@@ -269,7 +269,7 @@ final class PagesDomainsViewModel {
         dnsStates = states
     }
 
-    func add(name: String, canReadDNS: Bool) async -> Bool {
+    func add(name: String, canReadDNS: Bool, canWriteDNS: Bool) async -> Bool {
         guard !isMutating else { return false }
         isMutating = true
         error = nil
@@ -277,6 +277,16 @@ final class PagesDomainsViewModel {
         do {
             _ = try await service.addDomain(accountId: accountId, projectName: projectName, name: name)
             await load(canReadDNS: canReadDNS)
+            // 绑定后自动补解析：zone 在本账号且尚无记录时直接创建 CNAME，
+            // 用户无需再手动点「添加 CNAME 记录」。失败不影响绑定结果，
+            // 静默回退到列表里的手动按钮。
+            if canWriteDNS, case .missing = dnsStates[name] ?? .unknown,
+               let domain = domains.first(where: { $0.name == name }) {
+                if await performCreateCNAME(for: domain) == false {
+                    AppLog.network.notice("pages auto-CNAME failed for domain, fallback to manual button")
+                    error = nil
+                }
+            }
             didMutate.toggle()
             return true
         } catch {
@@ -320,10 +330,18 @@ final class PagesDomainsViewModel {
 
     /// 一键在域名所在 Zone 添加 CNAME → <project>.pages.dev（dns.write）
     func createCNAME(for domain: PagesDomain) async -> Bool {
-        guard !isMutating, let zoneTag = domain.zoneTag, let target = cnameTarget else { return false }
+        guard !isMutating else { return false }
         isMutating = true
         error = nil
         defer { isMutating = false }
+        let ok = await performCreateCNAME(for: domain)
+        if ok { didMutate.toggle() }
+        return ok
+    }
+
+    /// CNAME 创建核心（绑定后的自动补建与手动按钮共用；不管 isMutating 闸）
+    private func performCreateCNAME(for domain: PagesDomain) async -> Bool {
+        guard let zoneTag = domain.zoneTag, let target = cnameTarget else { return false }
         do {
             let record = CreateDNSRecord(
                 type: "CNAME", name: domain.name, content: target,
@@ -331,7 +349,6 @@ final class PagesDomainsViewModel {
             )
             _ = try await dnsService.createRecord(zoneId: zoneTag, record: record)
             dnsStates[domain.name] = .resolved(target)
-            didMutate.toggle()
             return true
         } catch {
             self.error = error.localizedDescription

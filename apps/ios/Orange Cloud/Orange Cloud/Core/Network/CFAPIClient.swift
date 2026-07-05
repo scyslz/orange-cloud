@@ -436,6 +436,11 @@ actor CFAPIClient {
         let (data, _) = try await performRequest(
             method: method, path: path, queryItems: queryItems, body: body, contentType: "application/json"
         )
+        // 少数端点（如 Workers 自定义域名 DELETE）2xx 时返回空 body 而非 CF 标准信封，
+        // 期待 EmptyResponse 时空体即成功，别硬解 JSON（Sentry APPLE-IOS-C）。
+        if data.isEmpty, let empty = EmptyResponse() as? T {
+            return empty
+        }
         return try Self.decode(data, path: path, method: method)
     }
 

@@ -15,10 +15,22 @@ import TipKit
 /// **不要把 `.id(账号)` 挪回容器外层或 MainTabView**：ensureAccounts 可能在本 Tab
 /// 可见时才完成或重试成功，selectedAccount nil→账号翻转若整体重建可见 NavigationStack，
 /// iOS 17.0.x 导航栏硬断言必崩（1.8.2(24) 复发根因，详见 DashboardView 注释）。
+///
+/// **`.navigationDestination` 必须挂在这里（栈根直接子级）、且写在 `.id(账号)` 的内侧**：
+/// ① navdest 注册在栈内容的嵌套子视图（ZoneListContent 内层）时，iOS 17.0 push CachedZone
+///   会陷入 AttributeGraph 无限更新循环（目的地解析与子视图更新相互失效），主线程 100%
+///   整 App 冻结、连 tab bar 都不响应；26.5 无恙。与 `.id(账号)` 无关（去掉 .id 仍冻结，实测二分）。
+/// ② 但 navdest 也不能写在 `.id()` 之后：账号切换 id 翻转时 iOS 17.0 导航栏硬断言必崩
+///   （实测，同 DashboardView 外壳注释）。
+/// 唯一两全的形态 = 外壳栈根 + `.id` 内侧：`content.navigationDestination(...).id(...)`。
+/// 同 DeveloperHubView 的 DevHubRoute navdest 铁律：navdest 只挂栈根。
 struct ZoneListView: View {
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var selectedZone: CachedZone?
+    /// zoom 转场源（列表行）在 ZoneListContent 里标记，namespace 由外壳持有传入，
+    /// 让栈根 navdest 的目的页能引用同一命名空间。
+    @Namespace private var zoomNamespace
 
     private let session: SessionStore
 
@@ -29,7 +41,7 @@ struct ZoneListView: View {
     var body: some View {
         if sizeClass == .regular {
             NavigationSplitView {
-                ZoneListContent(session: session, isSplit: true, selectedZone: $selectedZone)
+                ZoneListContent(session: session, isSplit: true, selectedZone: $selectedZone, zoomNamespace: zoomNamespace)
                     .id(session.selectedAccount?.id)
                     // 选中态住在外壳，账号切换时手动清空，否则 detail 栏残留旧账号的域名
                     .onChange(of: session.selectedAccount?.id) {
@@ -46,7 +58,11 @@ struct ZoneListView: View {
             }
         } else {
             NavigationStack {
-                ZoneListContent(session: session, isSplit: false, selectedZone: .constant(nil))
+                ZoneListContent(session: session, isSplit: false, selectedZone: .constant(nil), zoomNamespace: zoomNamespace)
+                    .navigationDestination(for: CachedZone.self) { zone in
+                        ZoneDetailView(zone: zone, session: session)
+                            .zoomNavigationTransition(sourceID: zone.id, in: zoomNamespace)
+                    }
                     .id(session.selectedAccount?.id)
             }
         }
@@ -66,12 +82,13 @@ private struct ZoneListContent: View {
     @State private var searchText = ""
     @State private var showAddSheet = false
     @State private var showAddDenied = false
-    @Namespace private var namespace
 
     private let isSplit: Bool
     @Binding private var selectedZone: CachedZone?
+    /// 外壳持有的 zoom 转场命名空间（目的页转场挂外壳栈根 navdest，源标记在本视图的行上）
+    private let zoomNamespace: Namespace.ID
 
-    init(session: SessionStore, isSplit: Bool, selectedZone: Binding<CachedZone?>) {
+    init(session: SessionStore, isSplit: Bool, selectedZone: Binding<CachedZone?>, zoomNamespace: Namespace.ID) {
         let accountId = session.selectedAccount?.id ?? ""
         _cachedZones = Query(
             filter: #Predicate<CachedZone> { $0.accountId == accountId },
@@ -80,6 +97,7 @@ private struct ZoneListContent: View {
         _viewModel = State(initialValue: ZoneListViewModel(zoneService: session.zoneService))
         self.isSplit = isSplit
         _selectedZone = selectedZone
+        self.zoomNamespace = zoomNamespace
     }
 
     private var filteredZones: [CachedZone] {
@@ -187,10 +205,9 @@ private struct ZoneListContent: View {
         .background { SkyBackground() }
         .navigationTitle("域名")
         .searchable(text: $searchText, prompt: "搜索域名")
-        .navigationDestination(for: CachedZone.self) { zone in
-            ZoneDetailView(zone: zone, session: session)
-                .zoomNavigationTransition(sourceID: zone.id, in: namespace)
-        }
+        // navigationDestination(for: CachedZone.self) 挂在外壳 ZoneListView 的栈根，
+        // 不能挂回这里：iOS 17.0 上 navdest 注册在栈内容的嵌套子视图会在 push 时
+        // 触发 AttributeGraph 无限循环整 App 冻结（见外壳注释）。
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 refreshButton
@@ -215,7 +232,7 @@ private struct ZoneListContent: View {
                         ZoneCard(zone: zone, accountName: session.selectedAccount?.name ?? "")
                     }
                     .buttonStyle(.plain)
-                    .zoomTransitionSource(id: zone.id, in: namespace)
+                    .zoomTransitionSource(id: zone.id, in: zoomNamespace)
                 }
             }
             .padding(OCLayout.pagePadding)

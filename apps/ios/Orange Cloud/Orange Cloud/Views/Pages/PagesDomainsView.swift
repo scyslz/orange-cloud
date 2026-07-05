@@ -105,7 +105,13 @@ struct PagesDomainsView: View {
         let name = newDomain.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         newDomain = ""
         guard name.contains("."), !name.contains(" ") else { return }
-        Task { await viewModel.add(name: name, canReadDNS: canReadDNS) }
+        Task {
+            await viewModel.add(
+                name: name,
+                canReadDNS: canReadDNS,
+                canWriteDNS: auth.hasScope("dns.write")
+            )
+        }
     }
 
     private func deleteConfirmedDomain() {

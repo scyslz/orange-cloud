@@ -42,6 +42,7 @@ final class SessionStore {
     let durableObjectService:      DurableObjectService
     let workersAIService:          WorkersAIService
     let hyperdriveService:         HyperdriveService
+    let zoneRulesetService:        ZoneRulesetService
 
     var accounts: [Account] = []
     var selectedAccount: Account? {
@@ -92,6 +93,7 @@ final class SessionStore {
         self.durableObjectService      = DurableObjectService(client: client)
         self.workersAIService          = WorkersAIService(client: client)
         self.hyperdriveService         = HyperdriveService(client: client)
+        self.zoneRulesetService        = ZoneRulesetService(client: client)
     }
 
     /// 幂等加载账号列表，首个账号设为当前账号

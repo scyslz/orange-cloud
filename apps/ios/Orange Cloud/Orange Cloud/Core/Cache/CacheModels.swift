@@ -22,6 +22,9 @@ final class CachedZone {
     var accountId:   String
     var updatedAt:   Date
     var pinned:      Bool = false    // 固定到 Dashboard 首页（用户手动控制，刷新不重置）
+    // DNS 记录总数（Dashboard 轻量 total_count 回写 / 详情页兜底拉取），nil = 尚未统计。
+    // 可选新增字段走轻量迁移；detail 页首屏优先读它，避免默认显示 0 条。
+    var dnsRecordCount: Int?
 
     init(from zone: Zone, accountId: String) {
         self.id          = zone.id

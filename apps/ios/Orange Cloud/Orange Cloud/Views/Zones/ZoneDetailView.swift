@@ -48,6 +48,12 @@ struct ZoneDetailView: View {
     private var canEditSettings: Bool { auth.hasScope("zone-settings.write") }
     private var canPurge: Bool { auth.hasScope("cache.purge") }
 
+    /// DNS 记录数：本地已同步过记录用实时缓存计数；否则用 Dashboard/入页回写的
+    /// total_count（CachedZone.dnsRecordCount），避免首进详情页默认显示 0 条。
+    private var dnsRecordDisplayCount: Int {
+        records.isEmpty ? (zone.dnsRecordCount ?? 0) : records.count
+    }
+
     private var statusText: String {
         switch zone.status {
         case "active":                  String(localized: "已启用")
@@ -89,7 +95,7 @@ struct ZoneDetailView: View {
                     ) {
                         DNSListView(zoneId: zone.id, zoneName: zone.name, session: session)
                     }
-                    .listRowStyleValue(String(localized: "\(records.count) 条"))
+                    .listRowStyleValue(String(localized: "\(dnsRecordDisplayCount) 条"))
 
                     ProGatedNavigationLink(
                         label: String(localized: "WAF 防火墙"),
@@ -113,26 +119,16 @@ struct ZoneDetailView: View {
                         RateLimitRulesView(zoneId: zone.id, zoneName: zone.name, session: session)
                     }
 
-                    ProGatedNavigationLink(
-                        label: String(localized: "Snippets"),
-                        systemImage: "curlybraces",
-                        requiredScope: "snippets.read",
-                        feature: .snippets,
-                        tint: .indigo,
+                    // 规则族（Transform / 缓存 / Snippets / 重定向 / 源站 / 配置 / 压缩 /
+                    // 自定义错误 / Page Rules / URL 规范化）统一收进「规则」二级入口
+                    PermissionGatedNavigationLink(
+                        label: String(localized: "规则"),
+                        systemImage: "list.bullet.rectangle",
+                        requiredScope: "zone.read",
+                        tint: .orange,
                         showsChevron: true
                     ) {
-                        SnippetsListView(zoneId: zone.id, zoneName: zone.name, session: session)
-                    }
-
-                    ProGatedNavigationLink(
-                        label: String(localized: "缓存规则"),
-                        systemImage: "bolt.horizontal",
-                        requiredScope: "cache-settings.read",
-                        feature: .cacheRules,
-                        tint: .cyan,
-                        showsChevron: true
-                    ) {
-                        CacheRulesListView(zoneId: zone.id, session: session)
+                        ZoneRulesHubView(zoneId: zone.id, zoneName: zone.name, session: session)
                     }
 
                     ProGatedNavigationLink(
@@ -174,16 +170,6 @@ struct ZoneDetailView: View {
                         showsChevron: true
                     ) {
                         ZoneSSLCertsView(zoneId: zone.id, session: session)
-                    }
-
-                    PermissionGatedNavigationLink(
-                        label: "Transform Rules",
-                        systemImage: "arrow.triangle.branch",
-                        requiredScope: "zone-transform-rules.read",
-                        tint: .indigo,
-                        showsChevron: true
-                    ) {
-                        ZoneTransformRulesView(zoneId: zone.id, session: session)
                     }
 
                     PermissionGatedNavigationLink(
@@ -317,6 +303,15 @@ struct ZoneDetailView: View {
         .task {
             if canReadSettings {
                 await actionsViewModel.loadSettings()
+            }
+        }
+        .task {
+            // 该 zone 尚未统计过记录数（前 50 个之外 / Dashboard 未加载完就进来）：
+            // 入页轻量拉一次 total_count 回写缓存，首屏不显示 0 条
+            if zone.dnsRecordCount == nil, records.isEmpty, auth.hasScope("dns.read"),
+               let count = try? await session.dnsService.recordCount(zoneId: zone.id) {
+                zone.dnsRecordCount = count
+                try? modelContext.save()
             }
         }
         .refreshable {

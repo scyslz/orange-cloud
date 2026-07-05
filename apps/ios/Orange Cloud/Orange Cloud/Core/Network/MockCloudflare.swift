@@ -10,6 +10,7 @@
 
 #if DEBUG
 import Foundation
+import os
 
 nonisolated enum MockCloudflare {
 
@@ -56,7 +57,7 @@ nonisolated final class MockCFURLProtocol: URLProtocol {
     override func startLoading() {
         let path = request.url?.path ?? ""
         let body = Self.readBody(of: request)
-        let json = Self.responseJSON(path: path, body: body)
+        let json = Self.responseJSON(path: path, body: body, method: request.httpMethod ?? "GET")
         let data = Data(json.utf8)
         let response = HTTPURLResponse(
             url: request.url!,
@@ -84,7 +85,14 @@ nonisolated final class MockCFURLProtocol: URLProtocol {
 
     // MARK: - 路由
 
-    private static func responseJSON(path: String, body: String) -> String {
+    private static func responseJSON(path: String, body: String, method: String = "GET") -> String {
+        if let rulesets = rulesetsResponse(path: path, body: body, method: method) {
+            return rulesets
+        }
+        if path.hasSuffix("/url_normalization") {
+            if method == "PUT", !body.isEmpty { return #"{"success":true,"errors":[],"messages":[],"result":\#(body)}"# }
+            return #"{"success":true,"errors":[],"messages":[],"result":{"type":"cloudflare","scope":"incoming"}}"#
+        }
         if path == "/client/v4/graphql" {
             if body.contains("zoneTag_in") {
                 return trafficJSON()
@@ -116,6 +124,96 @@ nonisolated final class MockCFURLProtocol: URLProtocol {
 
     private static func envelope(_ result: String, total: Int) -> String {
         #"{"success":true,"errors":[],"messages":[],"result":\#(result),"result_info":{"page":1,"per_page":50,"count":\#(total),"total_count":\#(total),"total_pages":1}}"#
+    }
+
+    // MARK: - Rulesets phase mock（有状态：模拟器里可真测规则的创建 / 编辑 / 启停 / 删除往返）
+
+    private static let rulesetsStore = OSAllocatedUnfairLock(uncheckedState: seedRulesets())
+
+    private static func seedRulesets() -> [String: [[String: Any]]] {
+        [
+            "http_request_dynamic_redirect": [[
+                "id": "rr1",
+                "description": "旧博客跳新站",
+                "expression": "(http.request.uri.path contains \"/blog/\")",
+                "enabled": true,
+                "action": "redirect",
+                "action_parameters": ["from_value": ["target_url": ["value": "https://example.com/news/"], "status_code": 301]],
+            ]],
+            "http_response_compression": [[
+                "id": "cr1",
+                "description": "静态资源优先 zstd",
+                "expression": "(http.request.uri.path contains \"/static/\")",
+                "enabled": true,
+                "action": "compress_response",
+                "action_parameters": ["algorithms": [["name": "zstd"], ["name": "brotli"], ["name": "gzip"]]],
+            ]],
+        ]
+    }
+
+    /// entrypoint 与规则增删改；未播种的 phase 首次 GET 按线上形态回「could not find entrypoint」
+    private static func rulesetsResponse(path: String, body: String, method: String) -> String? {
+        if let range = path.range(of: "/rulesets/phases/") {
+            let phase = String(path[range.upperBound...]).components(separatedBy: "/").first ?? ""
+            if method == "PUT", let obj = parseJSON(body), let rules = obj["rules"] as? [[String: Any]] {
+                let withIds = rules.enumerated().map { index, rule -> [String: Any] in
+                    var rule = rule
+                    if rule["id"] == nil { rule["id"] = "r\(index + 1)-new" }
+                    return rule
+                }
+                rulesetsStore.withLockUnchecked { $0[phase] = withIds }
+                return rulesetEnvelope(phase: phase)
+            }
+            let exists = rulesetsStore.withLockUnchecked { $0[phase] != nil }
+            guard exists else {
+                return #"{"success":false,"errors":[{"code":20217,"message":"could not find entrypoint ruleset"}],"messages":[],"result":null}"#
+            }
+            return rulesetEnvelope(phase: phase)
+        }
+        if let range = path.range(of: "/rulesets/rs-") {
+            let rest = String(path[range.upperBound...])
+            let parts = rest.components(separatedBy: "/rules")
+            let phase = parts[0]
+            let ruleId = parts.count > 1 ? parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "/")) : ""
+            switch method {
+            case "POST":
+                if var rule = parseJSON(body) {
+                    rulesetsStore.withLockUnchecked {
+                        rule["id"] = "r\(($0[phase]?.count ?? 0) + 1)-added"
+                        $0[phase, default: []].append(rule)
+                    }
+                }
+            case "PATCH":
+                if let patch = parseJSON(body) {
+                    rulesetsStore.withLockUnchecked {
+                        guard var rules = $0[phase],
+                              let index = rules.firstIndex(where: { ($0["id"] as? String) == ruleId }) else { return }
+                        for (key, value) in patch { rules[index][key] = value }
+                        $0[phase] = rules
+                    }
+                }
+            case "DELETE":
+                rulesetsStore.withLockUnchecked { $0[phase]?.removeAll { ($0["id"] as? String) == ruleId } }
+            default:
+                break
+            }
+            return rulesetEnvelope(phase: phase)
+        }
+        return nil
+    }
+
+    private static func parseJSON(_ body: String) -> [String: Any]? {
+        (try? JSONSerialization.jsonObject(with: Data(body.utf8))) as? [String: Any]
+    }
+
+    private static func rulesetEnvelope(phase: String) -> String {
+        let rules = rulesetsStore.withLockUnchecked { $0[phase] ?? [] }
+        let env: [String: Any] = [
+            "success": true, "errors": [], "messages": [],
+            "result": ["id": "rs-\(phase)", "name": "default", "phase": phase, "rules": rules],
+        ]
+        let data = (try? JSONSerialization.data(withJSONObject: env)) ?? Data("{}".utf8)
+        return String(decoding: data, as: UTF8.self)
     }
 
     /// 三个 zone 各 24 个小时桶（datetime ISO8601），previous 窗口一条

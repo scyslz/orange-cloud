@@ -131,22 +131,31 @@ final class DashboardViewModel {
             // 每个 Zone 一个轻量请求并发取 total_count；域名特别多时只统计前 50 个
             let service = dnsService
             let zoneIds = zones.prefix(50).map(\.id)
-            let total = await withTaskGroup(of: Int?.self) { group in
+            let counts = await withTaskGroup(of: (String, Int)?.self) { group in
                 for zoneId in zoneIds {
                     group.addTask {
-                        try? await service.recordCount(zoneId: zoneId)
+                        (try? await service.recordCount(zoneId: zoneId)).map { (zoneId, $0) }
                     }
                 }
-                var sum = 0
-                var anySuccess = zoneIds.isEmpty
-                for await count in group where count != nil {
-                    sum += count!
-                    anySuccess = true
+                var acc: [(zoneId: String, count: Int)] = []
+                for await pair in group {
+                    if let pair { acc.append(pair) }
                 }
-                return anySuccess ? sum : nil as Int?
+                return acc
             }
-            if let total {
-                dnsRecordTotal = total
+            if zoneIds.isEmpty {
+                dnsRecordTotal = 0
+            } else if !counts.isEmpty {
+                dnsRecordTotal = counts.reduce(0) { $0 + $1.count }
+                // 分域名回写缓存：域名详情页首屏直显记录数（不再默认 0 条等进列表刷新）
+                let rows = (try? context.fetch(
+                    FetchDescriptor<CachedZone>(predicate: #Predicate { $0.accountId == accountId })
+                )) ?? []
+                let byId = Dictionary(rows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+                for (zoneId, count) in counts {
+                    byId[zoneId]?.dnsRecordCount = count
+                }
+                try? context.save()
             }
         }
 
