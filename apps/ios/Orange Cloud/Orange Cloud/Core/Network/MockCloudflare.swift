@@ -64,9 +64,20 @@ nonisolated final class MockCFURLProtocol: URLProtocol {
             httpVersion: "HTTP/1.1",
             headerFields: ["Content-Type": "application/json"]
         )!
-        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: data)
-        client?.urlProtocolDidFinishLoading(self)
+        // ORANGE_MOCK_ACCOUNTS_DELAY_MS：延迟 /accounts 响应，拉宽「账号加载完成前」的
+        // 操作窗口（复现 selectedAccount 翻转时用户已切到其它 tab 的时序）。
+        let delayMs = ProcessInfo.processInfo.environment["ORANGE_MOCK_ACCOUNTS_DELAY_MS"].flatMap(Int.init) ?? 0
+        let delay: TimeInterval = (path == "/client/v4/accounts" && delayMs > 0) ? Double(delayMs) / 1000 : 0
+        let deliver = { [client] in
+            client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocol(self, didLoad: data)
+            client?.urlProtocolDidFinishLoading(self)
+        }
+        if delay > 0 {
+            DispatchQueue.global().asyncAfter(deadline: .now() + delay, execute: deliver)
+        } else {
+            deliver()
+        }
     }
 
     override func stopLoading() {}

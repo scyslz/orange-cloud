@@ -11,29 +11,75 @@ import SwiftUI
 import SwiftData
 import TipKit
 
+/// 域名 Tab 外壳：导航容器（Stack / Split）常驻，账号切换只重建容器内内容。
+/// **不要把 `.id(账号)` 挪回容器外层或 MainTabView**：ensureAccounts 可能在本 Tab
+/// 可见时才完成或重试成功，selectedAccount nil→账号翻转若整体重建可见 NavigationStack，
+/// iOS 17.0.x 导航栏硬断言必崩（1.8.2(24) 复发根因，详见 DashboardView 注释）。
 struct ZoneListView: View {
+
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @State private var selectedZone: CachedZone?
+
+    private let session: SessionStore
+
+    init(session: SessionStore) {
+        self.session = session
+    }
+
+    var body: some View {
+        if sizeClass == .regular {
+            NavigationSplitView {
+                ZoneListContent(session: session, isSplit: true, selectedZone: $selectedZone)
+                    .id(session.selectedAccount?.id)
+                    // 选中态住在外壳，账号切换时手动清空，否则 detail 栏残留旧账号的域名
+                    .onChange(of: session.selectedAccount?.id) {
+                        selectedZone = nil
+                    }
+            } detail: {
+                if let zone = selectedZone {
+                    NavigationStack {
+                        ZoneDetailView(zone: zone, session: session)
+                    }
+                } else {
+                    ContentUnavailableView("选择一个域名", systemImage: "globe", description: Text("从左侧列表选择域名查看详情"))
+                }
+            }
+        } else {
+            NavigationStack {
+                ZoneListContent(session: session, isSplit: false, selectedZone: .constant(nil))
+                    .id(session.selectedAccount?.id)
+            }
+        }
+    }
+}
+
+/// 域名列表内容（原 ZoneListView 本体）：@Query 谓词在 init 按当前账号构建，
+/// 外壳用 `.id(selectedAccount)` 在账号切换时重建本视图以刷新谓词。
+private struct ZoneListContent: View {
 
     @Environment(SessionStore.self) private var session
     @Environment(AuthManager.self) private var auth
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.horizontalSizeClass) private var sizeClass
     @Query private var cachedZones: [CachedZone]
 
     @State private var viewModel: ZoneListViewModel
     @State private var searchText = ""
-    @State private var selectedZone: CachedZone?
     @State private var showAddSheet = false
     @State private var showAddDenied = false
     @Namespace private var namespace
 
-    init(session: SessionStore) {
-        // 只读当前账号的域名；父视图用 .id(selectedAccount) 在切换账号时重建以刷新谓词。
+    private let isSplit: Bool
+    @Binding private var selectedZone: CachedZone?
+
+    init(session: SessionStore, isSplit: Bool, selectedZone: Binding<CachedZone?>) {
         let accountId = session.selectedAccount?.id ?? ""
         _cachedZones = Query(
             filter: #Predicate<CachedZone> { $0.accountId == accountId },
             sort: \CachedZone.name
         )
         _viewModel = State(initialValue: ZoneListViewModel(zoneService: session.zoneService))
+        self.isSplit = isSplit
+        _selectedZone = selectedZone
     }
 
     private var filteredZones: [CachedZone] {
@@ -56,8 +102,8 @@ struct ZoneListView: View {
 
     var body: some View {
         Group {
-            if sizeClass == .regular {
-                splitLayout
+            if isSplit {
+                sidebarLayout
             } else {
                 stackLayout
             }
@@ -87,82 +133,70 @@ struct ZoneListView: View {
         }
     }
 
-    // MARK: - iPad 双栏（regular）
+    // MARK: - iPad 侧栏（regular；NavigationSplitView 容器在外壳）
 
-    private var splitLayout: some View {
-        NavigationSplitView {
-            Group {
-                if cachedZones.isEmpty && viewModel.isLoading {
-                    SkeletonList(rows: 8, icon: .circle(30), trailing: true)
-                } else if cachedZones.isEmpty {
-                    emptyState
-                } else if filteredZones.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
-                } else {
-                    List(selection: $selectedZone) {
-                        Section {
-                            ForEach(filteredZones) { zone in
-                                ZoneSidebarRow(zone: zone)
-                                    .tag(zone)
-                            }
-                        } header: {
-                            Text("\(cachedZones.count) 个域名 · \(activeCount) 个已启用")
-                        }
-                    }
-                    .refreshable { await refresh(force: true) }
-                }
-            }
-            .navigationTitle("域名")
-            .searchable(text: $searchText, prompt: "搜索域名")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    refreshButton
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    addButton
-                }
-            }
-            .navigationSplitViewColumnWidth(min: 300, ideal: 340)
-        } detail: {
-            if let zone = selectedZone {
-                NavigationStack {
-                    ZoneDetailView(zone: zone, session: session)
-                }
+    private var sidebarLayout: some View {
+        Group {
+            if cachedZones.isEmpty && viewModel.isLoading {
+                SkeletonList(rows: 8, icon: .circle(30), trailing: true)
+            } else if cachedZones.isEmpty {
+                emptyState
+            } else if filteredZones.isEmpty {
+                ContentUnavailableView.search(text: searchText)
             } else {
-                ContentUnavailableView("选择一个域名", systemImage: "globe", description: Text("从左侧列表选择域名查看详情"))
+                List(selection: $selectedZone) {
+                    Section {
+                        ForEach(filteredZones) { zone in
+                            ZoneSidebarRow(zone: zone)
+                                .tag(zone)
+                        }
+                    } header: {
+                        Text("\(cachedZones.count) 个域名 · \(activeCount) 个已启用")
+                    }
+                }
+                .refreshable { await refresh(force: true) }
             }
         }
+        .navigationTitle("域名")
+        .searchable(text: $searchText, prompt: "搜索域名")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                refreshButton
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                addButton
+            }
+        }
+        .navigationSplitViewColumnWidth(min: 300, ideal: 340)
     }
 
-    // MARK: - iPhone 单栏（compact）
+    // MARK: - iPhone 单栏（compact；NavigationStack 容器在外壳）
 
     private var stackLayout: some View {
-        NavigationStack {
-            Group {
-                if cachedZones.isEmpty && viewModel.isLoading {
-                    SkeletonCardList()
-                } else if cachedZones.isEmpty {
-                    emptyState
-                } else if filteredZones.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
-                } else {
-                    zoneList
-                }
+        Group {
+            if cachedZones.isEmpty && viewModel.isLoading {
+                SkeletonCardList()
+            } else if cachedZones.isEmpty {
+                emptyState
+            } else if filteredZones.isEmpty {
+                ContentUnavailableView.search(text: searchText)
+            } else {
+                zoneList
             }
-            .background { SkyBackground() }
-            .navigationTitle("域名")
-            .searchable(text: $searchText, prompt: "搜索域名")
-            .navigationDestination(for: CachedZone.self) { zone in
-                ZoneDetailView(zone: zone, session: session)
-                    .zoomNavigationTransition(sourceID: zone.id, in: namespace)
+        }
+        .background { SkyBackground() }
+        .navigationTitle("域名")
+        .searchable(text: $searchText, prompt: "搜索域名")
+        .navigationDestination(for: CachedZone.self) { zone in
+            ZoneDetailView(zone: zone, session: session)
+                .zoomNavigationTransition(sourceID: zone.id, in: namespace)
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                refreshButton
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    refreshButton
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    addButton
-                }
+            ToolbarItem(placement: .topBarTrailing) {
+                addButton
             }
         }
     }

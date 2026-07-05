@@ -49,7 +49,28 @@ enum StorageKind: String, CaseIterable, Identifiable {
     }
 }
 
+/// 存储 Tab 外壳：NavigationStack 常驻，账号切换只重建栈内内容。
+/// **不要把 `.id(账号)` 挪回栈外或 MainTabView**：selectedAccount 可能在本 Tab 可见时
+/// 才翻转（ensureAccounts 延迟完成/重试），重建可见 NavigationStack 在 iOS 17.0.x
+/// 导航栏硬断言必崩（1.8.2(24) 复发根因，详见 DashboardView 注释）。
 struct StorageView: View {
+
+    private let session: SessionStore
+
+    init(session: SessionStore) {
+        self.session = session
+    }
+
+    var body: some View {
+        NavigationStack {
+            StorageContent(session: session)
+                .id(session.selectedAccount?.id)
+        }
+    }
+}
+
+/// 存储页内容（原 StorageView 本体）：ViewModel 持有的列表随外壳 `.id` 在账号切换时重置。
+private struct StorageContent: View {
 
     @Environment(SessionStore.self) private var session
     @Environment(AuthManager.self) private var auth
@@ -80,56 +101,54 @@ struct StorageView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                // 整模块 Pro 闸门：免费层不展示存储内容
-                if entitlements.isPro {
-                    proContent
-                } else {
-                    ProLockedView(feature: .storage)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
+        Group {
+            // 整模块 Pro 闸门：免费层不展示存储内容
+            if entitlements.isPro {
+                proContent
+            } else {
+                ProLockedView(feature: .storage)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .background { SkyBackground() }
-            .navigationTitle("存储")
-            .toolbar {
-                // R2 / D1 / KV 三段均提供创建入口（按各自写权限门控）
-                if entitlements.isPro, auth.hasScope(kind.requiredScope) {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(kind.createLabel, systemImage: "plus") { startCreate() }
-                    }
-                }
-            }
-            .sheet(isPresented: $showR2Create) {
-                R2CreateView(viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .sheet(isPresented: $showD1Create) {
-                D1CreateView(viewModel: d1ViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .sheet(isPresented: $showKVCreate) {
-                KVCreateView(viewModel: kvViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .sheet(item: $bucketToDelete) { bucket in
-                R2BucketDeleteConfirmView(bucket: bucket, viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .sheet(item: $databaseToDelete) { database in
-                D1DeleteConfirmView(database: database, viewModel: d1ViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .sheet(item: $namespaceToDelete) { namespace in
-                KVNamespaceDeleteConfirmView(namespace: namespace, viewModel: kvViewModel, accountId: session.selectedAccount?.id ?? "")
-            }
-            .alert("权限不足", isPresented: $writeDenied) {
-                Button("好", role: .cancel) {}
-            } message: {
-                Text("当前授权未包含此资源的写权限（\(kind.writeScope)）。\n请在设置中退出登录后重新授权以启用此功能。")
-            }
-            .sensoryFeedback(.success, trigger: r2ViewModel.didCreate)
-            .sensoryFeedback(.success, trigger: r2ViewModel.didDelete)
-            .sensoryFeedback(.success, trigger: d1ViewModel.didCreate)
-            .sensoryFeedback(.success, trigger: d1ViewModel.didDelete)
-            .sensoryFeedback(.success, trigger: kvViewModel.didCreate)
-            .sensoryFeedback(.success, trigger: kvViewModel.didDelete)
         }
+        .background { SkyBackground() }
+        .navigationTitle("存储")
+        .toolbar {
+            // R2 / D1 / KV 三段均提供创建入口（按各自写权限门控）
+            if entitlements.isPro, auth.hasScope(kind.requiredScope) {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(kind.createLabel, systemImage: "plus") { startCreate() }
+                }
+            }
+        }
+        .sheet(isPresented: $showR2Create) {
+            R2CreateView(viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sheet(isPresented: $showD1Create) {
+            D1CreateView(viewModel: d1ViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sheet(isPresented: $showKVCreate) {
+            KVCreateView(viewModel: kvViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sheet(item: $bucketToDelete) { bucket in
+            R2BucketDeleteConfirmView(bucket: bucket, viewModel: r2ViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sheet(item: $databaseToDelete) { database in
+            D1DeleteConfirmView(database: database, viewModel: d1ViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sheet(item: $namespaceToDelete) { namespace in
+            KVNamespaceDeleteConfirmView(namespace: namespace, viewModel: kvViewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .alert("权限不足", isPresented: $writeDenied) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("当前授权未包含此资源的写权限（\(kind.writeScope)）。\n请在设置中退出登录后重新授权以启用此功能。")
+        }
+        .sensoryFeedback(.success, trigger: r2ViewModel.didCreate)
+        .sensoryFeedback(.success, trigger: r2ViewModel.didDelete)
+        .sensoryFeedback(.success, trigger: d1ViewModel.didCreate)
+        .sensoryFeedback(.success, trigger: d1ViewModel.didDelete)
+        .sensoryFeedback(.success, trigger: kvViewModel.didCreate)
+        .sensoryFeedback(.success, trigger: kvViewModel.didDelete)
     }
 
     private var proContent: some View {

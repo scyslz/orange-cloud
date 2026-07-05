@@ -72,29 +72,27 @@ struct MainTabView: View {
 
     // MARK: - Tab 内容（两套 TabView 写法共用）
 
-    // 各资源 Tab 用 .id(selectedAccount) 绑定当前账号：账号切换时整页重建，
-    // 让按账号过滤的 @Query 谓词刷新、列表数据重新拉取（资源跟着选中账号走）。
+    // 账号维度的重建（.id(selectedAccount)）一律在各 Tab 视图内部、导航容器之内完成，
+    // **这里不允许出现任何 .id**：ensureAccounts 可能在任意 Tab 可见时才完成或重试成功
+    // （启动拉取失败后各页 load 都会重试），selectedAccount nil→账号翻转若重建可见
+    // NavigationStack，iOS 17.0.x 导航栏硬断言必崩——1.8.2(24) 复发的根因就是
+    // zones/developer/storage 三个 Tab 在此处残留的外层 .id（详见 DashboardView 注释）。
 
     @ViewBuilder private var dashboardTab: some View {
-        // 账号维度的重建（.id）在 DashboardView 内部、NavigationStack 之内完成——
-        // 在这里加 .id 会把可见导航栏连栈一起重建，iOS 17.0.x 必崩（详见 DashboardView 注释）。
         DashboardView(session: session)
     }
 
     @ViewBuilder private var zonesTab: some View {
         ZoneListView(session: session)
-            .id(session.selectedAccount?.id)
     }
 
     @ViewBuilder private var developerTab: some View {
         // 开发者平台聚合入口：Workers / Queues / Durable Objects / Hyperdrive / Workers AI / AI Gateway
         DeveloperHubView(session: session)
-            .id(session.selectedAccount?.id)
     }
 
     @ViewBuilder private var storageTab: some View {
         StorageView(session: session)
-            .id(session.selectedAccount?.id)
     }
 
     @ViewBuilder private var settingsTab: some View {
