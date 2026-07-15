@@ -127,7 +127,7 @@ jobs:
       - name: Build for iOS Simulator
         run: |
           set -euo pipefail
-          DEST="platform=iOS Simulator,name=iPhone 16,OS=latest"
+          DEST="platform=iOS Simulator,name=iPhone 14,OS=17.0,arch=arm64"
           SWIFT_FLAGS='${{ env.SWIFT_FLAGS }}'
           ARGS=(
             -project "${{ env.XCODE_PROJECT }}"
