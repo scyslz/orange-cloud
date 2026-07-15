@@ -1,0 +1,275 @@
+# Save as: .github/workflows/ios.yml
+#
+# Orange Cloud — iOS CI / self-build IPA
+# https://github.com/scyslz/orange-cloud
+#
+# Jobs
+#   build-simulator  — compile on iOS Simulator (push / PR / manual)
+#   release-ipa      — signed .ipa artifact (manual or version tag)
+#
+# Required GitHub Secrets (release-ipa only)
+#   IOS_DEVELOPMENT_TEAM          — 10-char Apple Team ID
+#   IOS_BUNDLE_ID_PREFIX          — e.g. com.yourname.orange-cloud
+#   IOS_APP_GROUP                 — e.g. group.com.yourname.orange-cloud
+#   IOS_DISTRIBUTION_P12_BASE64   — Apple Distribution .p12 (base64)
+#   IOS_DISTRIBUTION_P12_PASSWORD — .p12 export password
+#   IOS_KEYCHAIN_PASSWORD         — any strong random string
+#
+# Optional Secrets (OAuth for self-build; official o-c.do relay is not for 3rd-party builds)
+#   OAUTH_CLIENT_ID               — your Cloudflare OAuth client ID
+#   OAUTH_REDIRECT_URI            — e.g. https://your-domain.example/oauth/callback
+#
+# Before first release build, register in Apple Developer:
+#   App IDs + App Group + profiles for main app and every extension:
+#     {prefix}
+#     {prefix}.widgets
+#     {prefix}.watchkitapp
+#     {prefix}.watchkitapp.wdigets
+#     {prefix}.Orange-Cloud-File
+#     {prefix}.notification
+
+name: iOS
+
+on:
+  push:
+    branches: [main]
+    tags: ['ios-v*']
+    paths:
+      - 'apps/ios/**'
+      - '.github/workflows/ios.yml'
+  pull_request:
+    paths:
+      - 'apps/ios/**'
+      - '.github/workflows/ios.yml'
+  workflow_dispatch:
+    inputs:
+      build_ipa:
+        description: 'Also build signed IPA (requires signing secrets)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ios-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  XCODE_PROJECT: apps/ios/Orange Cloud/Orange Cloud.xcodeproj
+  XCODE_SCHEME: Orange Cloud
+  IOS_DEPLOYMENT_TARGET: '17.0'
+  # Unlock all Pro features for self-compiled builds (see CONTRIBUTING.md)
+  SWIFT_FLAGS: 'OPENSOURCE_UNLOCKED $(inherited)'
+
+jobs:
+  build-simulator:
+    name: Build (iOS Simulator)
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.0'
+
+      - name: Prepare self-build configuration
+        env:
+          TEAM_ID: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+          BUNDLE_PREFIX: ${{ secrets.IOS_BUNDLE_ID_PREFIX }}
+          APP_GROUP: ${{ secrets.IOS_APP_GROUP }}
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_REDIRECT_URI: ${{ secrets.OAUTH_REDIRECT_URI }}
+        run: |
+          set -euo pipefail
+          PBXPROJ="${{ env.XCODE_PROJECT }}/project.pbxproj"
+          OAUTH_CFG="apps/ios/Orange Cloud/Orange Cloud/Core/Auth/OAuthConfig.swift"
+
+          if [[ -n "${TEAM_ID}" ]]; then
+            sed -i '' "s/DEVELOPMENT_TEAM = [^;]*/DEVELOPMENT_TEAM = ${TEAM_ID}/g" "$PBXPROJ"
+          fi
+
+          if [[ -n "${BUNDLE_PREFIX}" ]]; then
+            sed -i '' "s/jiamin.chen.orange-cloud/${BUNDLE_PREFIX}/g" "$PBXPROJ"
+            find "apps/ios/Orange Cloud" -name '*.entitlements' -print0 \
+              | xargs -0 sed -i '' "s/jiamin.chen.orange-cloud/${BUNDLE_PREFIX}/g"
+          fi
+
+          if [[ -n "${APP_GROUP}" ]]; then
+            find "apps/ios/Orange Cloud" -name '*.entitlements' -print0 \
+              | xargs -0 sed -i '' "s/group.jiamin.chen.Orange-Cloud/${APP_GROUP}/g"
+          fi
+
+          if [[ -n "${OAUTH_CLIENT_ID}" ]]; then
+            sed -i '' "s/static let clientID = \"[^\"]*\"/static let clientID = \"${OAUTH_CLIENT_ID}\"/" "$OAUTH_CFG"
+          fi
+
+          if [[ -n "${OAUTH_REDIRECT_URI}" ]]; then
+            sed -i '' "s|static let redirectURI = \"[^\"]*\"|static let redirectURI = \"${OAUTH_REDIRECT_URI}\"|" "$OAUTH_CFG"
+          fi
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: deriveddata-${{ runner.os }}-xcode26-${{ hashFiles('apps/ios/**/*.swift', env.XCODE_PROJECT) }}
+          restore-keys: |
+            deriveddata-${{ runner.os }}-xcode26-
+
+      - name: Resolve Swift packages
+        working-directory: apps/ios/Orange Cloud
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project "Orange Cloud.xcodeproj" \
+            -scheme "${{ env.XCODE_SCHEME }}"
+
+      - name: Build for iOS Simulator
+        run: |
+          set -euo pipefail
+          DEST="platform=iOS Simulator,name=iPhone 16,OS=latest"
+          ARGS=(
+            -project "${{ env.XCODE_PROJECT }}"
+            -scheme "${{ env.XCODE_SCHEME }}"
+            -destination "$DEST"
+            -configuration Debug
+            -skipPackagePluginValidation
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=${{ env.SWIFT_FLAGS }}"
+            "IPHONEOS_DEPLOYMENT_TARGET=${{ env.IOS_DEPLOYMENT_TARGET }}"
+            CODE_SIGN_STYLE=Automatic
+          )
+          if [[ -n "${{ secrets.IOS_DEVELOPMENT_TEAM }}" ]]; then
+            ARGS+=(DEVELOPMENT_TEAM="${{ secrets.IOS_DEVELOPMENT_TEAM }}" -allowProvisioningUpdates)
+          else
+            echo "::warning::IOS_DEVELOPMENT_TEAM not set — build may fail because this app has extensions and App Groups."
+          fi
+          xcodebuild build "${ARGS[@]}"
+
+  release-ipa:
+    name: Release IPA
+    needs: build-simulator
+    if: >
+      (github.event_name == 'workflow_dispatch' && inputs.build_ipa) ||
+      startsWith(github.ref, 'refs/tags/ios-v')
+    runs-on: macos-15
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.0'
+
+      - name: Validate signing secrets
+        run: |
+          set -euo pipefail
+          for key in IOS_DEVELOPMENT_TEAM IOS_BUNDLE_ID_PREFIX IOS_APP_GROUP \
+                     IOS_DISTRIBUTION_P12_BASE64 IOS_DISTRIBUTION_P12_PASSWORD IOS_KEYCHAIN_PASSWORD; do
+            if [[ -z "${!key:-}" ]]; then
+              echo "::error::Missing secret: $key"
+              exit 1
+            fi
+          done
+        env:
+          IOS_DEVELOPMENT_TEAM: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+          IOS_BUNDLE_ID_PREFIX: ${{ secrets.IOS_BUNDLE_ID_PREFIX }}
+          IOS_APP_GROUP: ${{ secrets.IOS_APP_GROUP }}
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+
+      - name: Prepare self-build configuration
+        env:
+          TEAM_ID: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+          BUNDLE_PREFIX: ${{ secrets.IOS_BUNDLE_ID_PREFIX }}
+          APP_GROUP: ${{ secrets.IOS_APP_GROUP }}
+          OAUTH_CLIENT_ID: ${{ secrets.OAUTH_CLIENT_ID }}
+          OAUTH_REDIRECT_URI: ${{ secrets.OAUTH_REDIRECT_URI }}
+        run: |
+          set -euo pipefail
+          PBXPROJ="${{ env.XCODE_PROJECT }}/project.pbxproj"
+          OAUTH_CFG="apps/ios/Orange Cloud/Orange Cloud/Core/Auth/OAuthConfig.swift"
+
+          sed -i '' "s/DEVELOPMENT_TEAM = [^;]*/DEVELOPMENT_TEAM = ${TEAM_ID}/g" "$PBXPROJ"
+          sed -i '' "s/jiamin.chen.orange-cloud/${BUNDLE_PREFIX}/g" "$PBXPROJ"
+          find "apps/ios/Orange Cloud" -name '*.entitlements' -print0 \
+            | xargs -0 sed -i '' "s/jiamin.chen.orange-cloud/${BUNDLE_PREFIX}/g"
+          find "apps/ios/Orange Cloud" -name '*.entitlements' -print0 \
+            | xargs -0 sed -i '' "s/group.jiamin.chen.Orange-Cloud/${APP_GROUP}/g"
+
+          if [[ -n "${OAUTH_CLIENT_ID}" ]]; then
+            sed -i '' "s/static let clientID = \"[^\"]*\"/static let clientID = \"${OAUTH_CLIENT_ID}\"/" "$OAUTH_CFG"
+          fi
+          if [[ -n "${OAUTH_REDIRECT_URI}" ]]; then
+            sed -i '' "s|static let redirectURI = \"[^\"]*\"|static let redirectURI = \"${OAUTH_REDIRECT_URI}\"|" "$OAUTH_CFG"
+          fi
+
+      - name: Import distribution certificate
+        env:
+          P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_KEYCHAIN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/signing.keychain-db"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+          security import "$RUNNER_TEMP/dist.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+      - name: Archive
+        run: |
+          set -euo pipefail
+          ARCHIVE_PATH="$RUNNER_TEMP/OrangeCloud.xcarchive"
+          xcodebuild archive \
+            -project "${{ env.XCODE_PROJECT }}" \
+            -scheme "${{ env.XCODE_SCHEME }}" \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            -destination 'generic/platform=iOS' \
+            SWIFT_ACTIVE_COMPILATION_CONDITIONS="${{ env.SWIFT_FLAGS }}" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="${{ secrets.IOS_DEVELOPMENT_TEAM }}" \
+            -allowProvisioningUpdates
+
+      - name: Export IPA
+        run: |
+          set -euo pipefail
+          ARCHIVE_PATH="$RUNNER_TEMP/OrangeCloud.xcarchive"
+          EXPORT_PATH="$RUNNER_TEMP/export"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>ad-hoc</string>
+            <key>teamID</key>
+            <string>${{ secrets.IOS_DEVELOPMENT_TEAM }}</string>
+            <key>compileBitcode</key>
+            <false/>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -allowProvisioningUpdates
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OrangeCloud-ipa
+          path: ${{ runner.temp }}/export/*.ipa
+          retention-days: 30
